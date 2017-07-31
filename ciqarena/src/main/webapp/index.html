@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script>
+    function echo(text) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                callback(xmlHttp.responseText);
+            }
+        };
+        xmlHttp.open("GET", "api/echo-service/echo?text=" + text, true); // true for asynchronous
+        xmlHttp.send(null);
+    }
+
+    function callback(text) {
+        document.getElementById('txt2').value = text;
+    }
+</script>
+<body>
+<input type="text" id="txt">
+<input type="button" id="submit" value="submit" onclick="echo(document.getElementById('txt').value);">
+<input type="text" id="txt2" disabled>
+</body>
+</html>
