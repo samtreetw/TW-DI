@@ -32,7 +32,7 @@ public class EchoServiceImpl implements EchoService {
     @Override
     public String getAll() {
         List<String> all = dao.getAll();
-        return all.isEmpty() ? null : Arrays.toString(all.toArray());
+        return all.isEmpty() ? "" : Arrays.toString(all.toArray());
     }
 
     @Override

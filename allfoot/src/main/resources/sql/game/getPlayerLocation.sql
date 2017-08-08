@@ -1,0 +1,1 @@
+SELECT location from player where esn = ?;
