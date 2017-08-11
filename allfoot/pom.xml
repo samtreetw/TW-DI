@@ -230,10 +230,16 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.13</version>
         </dependency>
+        <!-- Line related -->
+        <dependency>
+            <groupId>com.linecorp.bot</groupId>
+            <artifactId>line-bot-servlet</artifactId>
+            <version>1.8.0</version>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>ciqarena</finalName>
+        <finalName>allfoot</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
