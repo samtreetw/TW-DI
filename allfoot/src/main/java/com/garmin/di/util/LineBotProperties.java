@@ -1,7 +1,6 @@
 package com.garmin.di.util;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -19,12 +18,10 @@ public class LineBotProperties {
     private static String channelSecret;
     static {
         properties = new Properties();
-        String configFile = LineBotProperties.class.getClassLoader().getResource("line-bot.properties").getPath();
         try {
+            String configFile = LineBotProperties.class.getClassLoader().getResource("line-bot.properties").getPath();
             properties.load(new FileInputStream(configFile));
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
+        } catch (IOException | NullPointerException ex) {
             ex.printStackTrace();
         }
         channelToken = properties.getProperty("line.bot.channelToken", "token");

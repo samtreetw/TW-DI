@@ -2,21 +2,21 @@ package com.garmin.di.impl;
 
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
-import com.linecorp.bot.client.LineMessagingServiceBuilder;
+import com.garmin.di.util.LineBotUtils;
 import com.linecorp.bot.client.LineSignatureValidator;
-import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.*;
+import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.message.TextMessage;
-import com.linecorp.bot.model.response.BotApiResponse;
 import com.linecorp.bot.servlet.LineBotCallbackException;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
 import org.springframework.stereotype.Service;
-import retrofit2.Response;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.*;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 
 /**
@@ -80,23 +80,18 @@ public class LineServiceImpl implements LineService {
         return;
     }
 
-    private void handleTextMessage(MessageEvent event) {
-        TextMessage textMessage = new TextMessage(((TextMessageContent) event.getMessage()).getText());
-        ReplyMessage replyMessage = new ReplyMessage(
-                event.getReplyToken(),
-                textMessage
-        );
-        Response<BotApiResponse> response;
-        try {
-            response = LineMessagingServiceBuilder
-                    .create(LineBotProperties.getChannelToken())
-                    .build()
-                    .replyMessage(replyMessage)
-                    .execute();
-            System.out.println(response.code() + " " + response.message());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void handleTextMessage(final MessageEvent event) {
+        String originText = ((TextMessageContent) event.getMessage()).getText();
+        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
+        Timer timer = new Timer( 30000, new ActionListener(){
+            @Override
+            public void actionPerformed( ActionEvent e ){
+                LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genStickerMessage("2", "141"));
+                LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genTextMessage("This is push message."));
+            }
+        } );
+        timer.setRepeats( false );
+        timer.start();
     }
 
     private void handleUnfollowEvent(UnfollowEvent event) {
@@ -116,5 +111,4 @@ public class LineServiceImpl implements LineService {
 
     private void handleBeaconEvent(BeaconEvent event) {
     }
-
 }
