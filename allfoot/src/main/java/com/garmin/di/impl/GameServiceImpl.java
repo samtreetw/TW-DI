@@ -20,8 +20,12 @@ import java.util.List;
 @Service
 public class GameServiceImpl implements GameService {
 
-    @Autowired
     private GameDao gameDao;
+
+    @Autowired
+    public GameServiceImpl(GameDao gameDao) {
+        this.gameDao = gameDao;
+    }
 
     @Override
     public String join(String esn) {

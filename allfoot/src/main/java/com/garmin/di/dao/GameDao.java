@@ -22,4 +22,9 @@ public interface GameDao {
     boolean gotoRoom(String esn, int roomId);
 
     Room getRoom(int roomId);
+
+    boolean updateGameStatus(int gameStatusId);
+
+    boolean addGameRecord(String esn, int roomId);
+
 }

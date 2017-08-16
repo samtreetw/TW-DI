@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,12 +42,14 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ROOM =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoom.sql"));
 
-    @Autowired
-    @Qualifier("dataSource")
-    private DataSource dataSource;
+    private static final String SQL_INSERT_ROOM_EVENT =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomEvent.sql"));
 
-    @PostConstruct
-    private void init() {
+    private static final String SQL_UPDATE_GAME_STATUS =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
+
+    @Autowired
+    public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
     }
 
@@ -96,5 +97,18 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
             }
         }, roomId);
         return rooms.isEmpty() ? null : rooms.get(0);
+    }
+
+    @Override
+    public boolean updateGameStatus(int gameStatusId) {
+        return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatusId) > 0;
+    }
+
+    @Override
+    public boolean addGameRecord(String esn, int roomId) {
+        MapSqlParameterSource source = new MapSqlParameterSource();
+        source.addValue("room_id", roomId);
+        source.addValue("esn", esn);
+        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_EVENT, source) > 0;
     }
 }
