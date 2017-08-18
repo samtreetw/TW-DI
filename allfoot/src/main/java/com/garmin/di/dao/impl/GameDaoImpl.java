@@ -68,6 +68,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
                 LinkedRoom lr = new LinkedRoom();
                 lr.setRoomId(resultSet.getInt("room_id_to"));
                 lr.setDistance(resultSet.getInt("distance"));
+                lr.setRoomName(resultSet.getString("name"));
                 return lr;
             }
         }, roomId);

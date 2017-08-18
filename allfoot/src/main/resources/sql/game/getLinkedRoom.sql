@@ -1,6 +1,7 @@
 SELECT
   room_id_to,
-  distance
+  distance,
+  [name]
 FROM room_link rl
   JOIN room r ON rl.room_id_to = r.room_id
 WHERE room_id_from = ?
