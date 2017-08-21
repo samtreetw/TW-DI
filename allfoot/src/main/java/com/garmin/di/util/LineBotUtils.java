@@ -4,16 +4,22 @@ import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.Multicast;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.ReplyEvent;
 import com.linecorp.bot.model.message.*;
 import com.linecorp.bot.model.message.imagemap.ImagemapAction;
 import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
-import com.linecorp.bot.model.message.template.Template;
+import com.linecorp.bot.model.message.template.*;
 import com.linecorp.bot.model.response.BotApiResponse;
 import com.sun.istack.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +32,10 @@ import java.util.Set;
  */
 
 public class LineBotUtils {
+    public static final String QUESTION_IMAGE = "https://i.imgur.com/HHQEUIf.jpg";
+    public static final String ANSWER_SENT = "Answer has been sent!";
+
+    private static Logger logger = LoggerFactory.getLogger(LineBotUtils.class);
 
     /*
      * Message Generators
@@ -122,6 +132,70 @@ public class LineBotUtils {
         return new TemplateMessage(altText, template);
     }
 
+    /**
+     * Generate {@link ButtonsTemplate} for line-bot usage.
+     *
+     * @param thumbnailImageUrl
+     * @param title
+     * @param text
+     * @param actions
+     * @return {@link ButtonsTemplate}
+     */
+    public static ButtonsTemplate genButtonsTemplate(String thumbnailImageUrl, String title, String text, List<Action> actions) {
+        return new ButtonsTemplate(thumbnailImageUrl, title, text, actions);
+    }
+
+    /**
+     * Generate {@link ConfirmTemplate} for line-bot usage.
+     *
+     * @param text
+     * @param actions
+     * @return {@link ConfirmTemplate}
+     */
+    public static ConfirmTemplate genConfirmTemplate(String text, List<Action> actions) {
+        return new ConfirmTemplate(text, actions);
+    }
+
+    /**
+     * Generate {@link CarouselTemplate} for line-bot usage.
+     *
+     * @param columns
+     * @return {@link CarouselTemplate}
+     */
+    public static CarouselTemplate genCarouselTemplate(List<CarouselColumn> columns) {
+        return new CarouselTemplate(columns);
+    }
+
+    /**
+     * Generate {@link CarouselColumn} for line-bot usage.
+     *
+     * @param thumbnailImageUrl
+     * @param title
+     * @param text
+     * @param actions
+     * @return {@link CarouselColumn}
+     */
+    public static CarouselColumn genCarouselColumn(String thumbnailImageUrl, String title, String text, List<Action> actions) {
+        return new CarouselColumn(thumbnailImageUrl, title, text, actions);
+    }
+
+    /**
+     * Generate {@link TemplateMessage} a question for allfoot question.
+     *
+     * @param questionId Question ID.
+     * @param question Question text.
+     * @param answers A list of answer options.
+     * @return {@link TemplateMessage}
+     */
+    public static TemplateMessage genQuestion(String altText, String questionId, String question, List<String> answers) {
+        List<Action> actions = new ArrayList<>();
+        for (int i = 0; i < answers.size(); i++) {
+            actions.add(new PostbackAction(answers.get(i), questionId + ":" + i, ANSWER_SENT));
+        }
+        Template template = genButtonsTemplate(QUESTION_IMAGE, null, question, actions);
+        return genTemplateMessage(altText, template);
+    }
+
 
     /*
      * Send Utilities
@@ -133,7 +207,7 @@ public class LineBotUtils {
      * @param event {@link MessageEvent} Incoming message from a specific user.
      * @param message {@link Message} Message to be sent for this reply message.
      */
-    public static void sendReplyMessage(MessageEvent event, Message message) {
+    public static void sendReplyMessage(ReplyEvent event, Message message) {
         ReplyMessage replyMessage = new ReplyMessage(event.getReplyToken(), message);
         Response<BotApiResponse> response;
         try {
@@ -142,7 +216,7 @@ public class LineBotUtils {
                     .build()
                     .replyMessage(replyMessage)
                     .execute();
-            System.out.println(response.code() + " " + response.message());
+            logger.info(response.code() + " " + response.message());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -164,7 +238,7 @@ public class LineBotUtils {
                     .build()
                     .pushMessage(pushMessage)
                     .execute();
-            System.out.println(response.code() + " " + response.message());
+            logger.info(response.code() + " " + response.message());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -186,7 +260,7 @@ public class LineBotUtils {
                             .build()
                             .multicast(multicast)
                             .execute();
-            System.out.println(response.code() + " " + response.message());
+            logger.info(response.code() + " " + response.message());
         } catch (IOException e) {
             e.printStackTrace();
         }
