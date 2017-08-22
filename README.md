@@ -1,6 +1,6 @@
 # TW-DI
-To run the code in local tomecat, please edit your context.xml in /conf
-Line:21 ~ Line:25
+To run the code in local tomecat, please edit your context.xml in /conf 
+Line:21 ~ Line:25, change D:\gitProject\DI\TW-DI\allfoot.db to your local path 
 {code}
 <Context>
 
