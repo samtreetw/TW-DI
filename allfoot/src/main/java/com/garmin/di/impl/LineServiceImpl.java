@@ -1,5 +1,7 @@
 package com.garmin.di.impl;
 
+import com.garmin.di.dao.DbBase;
+import com.garmin.di.dao.GameDao;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
@@ -7,8 +9,12 @@ import com.linecorp.bot.client.LineSignatureValidator;
 import com.linecorp.bot.model.event.*;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.message.*;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.servlet.LineBotCallbackException;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +38,15 @@ public class LineServiceImpl implements LineService {
     @Context
     private HttpServletRequest httpServletRequest;
     private static LineBotCallbackRequestParser lineBotCallbackRequestParser = new LineBotCallbackRequestParser(new LineSignatureValidator(LineBotProperties.getChannelSecret().getBytes()));
+
+    private DbBase dbBase;
+    private GameDao gameDao;
+
+    @Autowired
+    public LineServiceImpl(DbBase dbBase, GameDao gameDao) {
+        this.dbBase = dbBase;
+        this.gameDao = gameDao;
+    }
 
     @Override
     public javax.ws.rs.core.Response callback() {
@@ -110,8 +125,31 @@ public class LineServiceImpl implements LineService {
     }
 
     private void handlePostbackEvent(PostbackEvent event) {
-        // todo Check if the answer is correct
-        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(event.getPostbackContent().getData()));
+
+        // Postback content data should be like "name1:value1,name2:value2 ..."
+        ArrayList<Pair<String, String>> arrayList = new ArrayList<>();
+        String[] pairs = event.getPostbackContent().getData().split(",");
+        for (String pair : pairs) {
+            String[] keyValue = pair.split(":");
+            arrayList.add(new ImmutablePair<>(keyValue[0], keyValue[1]));
+        }
+
+        String lineId = event.getSource().getUserId();
+        for (Pair<String, String> item : arrayList) {
+            switch (item.getKey()) {
+                case "UserLineID":
+                    if (gameDao.updatePlayerLineId(item.getValue(), lineId)) {
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player Line ID is updated."));
+                    } else {
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player Line ID."));
+                    }
+                    break;
+                default:
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(item.getValue()));
+                    break;
+            }
+        }
+
     }
 
     private void handleBeaconEvent(BeaconEvent event) {
@@ -123,37 +161,55 @@ public class LineServiceImpl implements LineService {
      */
     private void handleTextMessage(final MessageEvent event) {
         String originText = ((TextMessageContent) event.getMessage()).getText();
+        final String question;
+        final ArrayList<Pair<String, String>> answers ;
         switch (originText) {
-            case "save":
-                // todo Save User ID
+            case "add user":
+                question = "Who are you?";
+                answers = new ArrayList<>();
+                for (int i = 0; i < 8; i++) {
+                    answers.add(new ImmutablePair<>("User " + String.valueOf(i+1), String.valueOf(i+1)));
+                }
+                LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers));
                 break;
-            case "save admin":
-                // todo Save Admin ID
+            case "add admin":
+                UserProfileResponse userProfileResponse = LineBotUtils.getUserProfile(event.getSource().getUserId());
+                if (userProfileResponse == null) {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Unable to retrieve profile. Fail to add you as admin."));
+                    break;
+                }
+                if (gameDao.addAdmin(userProfileResponse.getDisplayName(), userProfileResponse.getUserId())) {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(userProfileResponse.getDisplayName() + " has been added as admin."));
+                } else {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to add you as admin."));
+                }
                 break;
             case LineBotUtils.ANSWER_SENT:
                 // Receive answer sent string, do nothing
                 break;
-            default:
-                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
-
-                // Push message
-                final String testQuestion = "This is a test question.";
-                final ArrayList<String> testAnswers = new ArrayList<>();
-                testAnswers.add("Answer 1");
-                testAnswers.add("Answer 2");
-                testAnswers.add("Answer 3");
-                testAnswers.add("Answer 4");
+            case "test":
+                // Push message test
+                question = "This is a test question.";
+                answers = new ArrayList<>();
+                answers.add(new ImmutablePair<>("Answer 1", "1"));
+                answers.add(new ImmutablePair<>("Answer 2", "2"));
+                answers.add(new ImmutablePair<>("Answer 3", "3"));
+                answers.add(new ImmutablePair<>("Answer 4", "4"));
                 Timer timer = new Timer(10000, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genStickerMessage("2", "141"));
                         LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genTextMessage("This is push message."));
-                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", "1", testQuestion, testAnswers));
+                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", "1", question, answers));
                     }
                 });
                 timer.setRepeats(false);
                 timer.start();
                 break;
+            default:
+                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
+                break;
+
         }
     }
 

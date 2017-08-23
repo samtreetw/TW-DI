@@ -17,11 +17,17 @@ CREATE TABLE IF NOT EXISTS room_link (
 
 CREATE TABLE IF NOT EXISTS player (
   esn      VARCHAR,
-  location INT
+  location INT,
+  line_id  VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS room_event (
   room_id    INT,
   player_esn VARCHAR,
   rank       INT
+);
+
+CREATE TABLE IF NOT EXISTS admin_user (
+  name    VARCHAR,
+  line_id VARCHAR
 );

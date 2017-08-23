@@ -12,8 +12,10 @@ import com.linecorp.bot.model.message.*;
 import com.linecorp.bot.model.message.imagemap.ImagemapAction;
 import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
 import com.linecorp.bot.model.message.template.*;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.model.response.BotApiResponse;
 import com.sun.istack.NotNull;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Response;
@@ -184,13 +186,13 @@ public class LineBotUtils {
      *
      * @param questionId Question ID.
      * @param question Question text.
-     * @param answers A list of answer options.
+     * @param answers A list of answer options. An answer should be (Answer text, Answer value).
      * @return {@link TemplateMessage}
      */
-    public static TemplateMessage genQuestion(String altText, String questionId, String question, List<String> answers) {
+    public static TemplateMessage genQuestion(String altText, String questionId, String question, List<Pair<String, String>> answers) {
         List<Action> actions = new ArrayList<>();
-        for (int i = 0; i < answers.size(); i++) {
-            actions.add(new PostbackAction(answers.get(i), questionId + ":" + i, ANSWER_SENT));
+        for (Pair<String, String> answer : answers) {
+            actions.add(new PostbackAction(answer.getKey(), questionId + ":" + answer.getValue(), ANSWER_SENT));
         }
         Template template = genButtonsTemplate(QUESTION_IMAGE, null, question, actions);
         return genTemplateMessage(altText, template);
@@ -264,5 +266,30 @@ public class LineBotUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Use a user ID to retrieve user profile {@link UserProfileResponse}.
+     *
+     * @param userId User ID for sending this request.
+     * @return {@link UserProfileResponse}
+     */
+    public static UserProfileResponse getUserProfile(String userId) {
+        try {
+            Response<UserProfileResponse> response =
+                    LineMessagingServiceBuilder
+                            .create(LineBotProperties.getChannelToken())
+                            .build()
+                            .getProfile(userId)
+                            .execute();
+            if (response.isSuccessful()) {
+                return response.body();
+            } else {
+                logger.info(response.code() + " " + response.message());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

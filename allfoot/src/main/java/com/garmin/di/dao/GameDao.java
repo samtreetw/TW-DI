@@ -27,4 +27,7 @@ public interface GameDao {
 
     boolean addGameRecord(String esn, int roomId);
 
+    boolean addAdmin(String name, String lineId);
+
+    boolean updatePlayerLineId(String esn, String lineId);
 }

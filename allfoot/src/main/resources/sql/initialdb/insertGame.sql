@@ -20,3 +20,11 @@ INSERT INTO room_link (room_id_from, room_id_to, distance) values (3, 0, 100);
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (1, 2, 100);
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (2, 1, 100);
 
+INSERT INTO player (esn, location, line_id) values ('1', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('2', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('3', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('4', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('5', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('6', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('7', 0, '0');
+INSERT INTO player (esn, location, line_id) values ('8', 0, '0');

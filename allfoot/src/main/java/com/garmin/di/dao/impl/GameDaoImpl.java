@@ -48,6 +48,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_UPDATE_GAME_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
 
+    private static final String SQL_INSERT_ADMIN =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertAdmin.sql"));
+
+    private static final String SQL_UPDATE_PLAYER_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updatePlayerLineId.sql"));
+
     @Autowired
     public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -111,5 +117,18 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         source.addValue("room_id", roomId);
         source.addValue("esn", esn);
         return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_EVENT, source) > 0;
+    }
+
+    @Override
+    public boolean addAdmin(String name, String lineId) {
+        MapSqlParameterSource source = new MapSqlParameterSource();
+        source.addValue("name", name);
+        source.addValue("line_id", lineId);
+        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ADMIN, source) > 0;
+    }
+
+    @Override
+    public boolean updatePlayerLineId(String esn, String lineId) {
+        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LINE_ID, lineId, esn) > 0;
     }
 }
