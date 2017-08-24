@@ -139,9 +139,9 @@ public class LineServiceImpl implements LineService {
             switch (item.getKey()) {
                 case "UserLineID":
                     if (gameDao.updatePlayerLineId(item.getValue(), lineId)) {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player Line ID is updated."));
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
                     } else {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player Line ID."));
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
                     }
                     break;
                 default:
@@ -170,18 +170,19 @@ public class LineServiceImpl implements LineService {
                 for (int i = 0; i < 8; i++) {
                     answers.add(new ImmutablePair<>("User " + String.valueOf(i+1), String.valueOf(i+1)));
                 }
-                LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers));
+                LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers.subList(0, 4)));
+                LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers.subList(4, 8)));
                 break;
             case "add admin":
                 UserProfileResponse userProfileResponse = LineBotUtils.getUserProfile(event.getSource().getUserId());
                 if (userProfileResponse == null) {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Unable to retrieve profile. Fail to add you as admin."));
-                    break;
+                    return;
                 }
                 if (gameDao.addAdmin(userProfileResponse.getDisplayName(), userProfileResponse.getUserId())) {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(userProfileResponse.getDisplayName() + " has been added as admin."));
                 } else {
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to add you as admin."));
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to add you as admin. You may be an existing admin."));
                 }
                 break;
             case LineBotUtils.ANSWER_SENT:
@@ -206,6 +207,26 @@ public class LineServiceImpl implements LineService {
                 timer.setRepeats(false);
                 timer.start();
                 break;
+
+            // Admin Only Commands
+            case "reset db":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    dbBase.drop();
+                    dbBase.setup();
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Reset DB success."));
+                } else {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Reset DB fail."));
+                }
+                break;
+            case "reset game":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    dbBase.reset();
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Reset game success."));
+                } else {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Reset game fail."));
+                }
+                break;
+
             default:
                 LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
                 break;

@@ -54,6 +54,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_UPDATE_PLAYER_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updatePlayerLineId.sql"));
 
+    private static final String SQL_GET_PLAYER_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getPlayerLineId.sql"));
+
+    private static final String SQL_CHECK_IS_ADMIN =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/checkIsAdmin.sql"));
+
     @Autowired
     public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -130,5 +136,17 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     @Override
     public boolean updatePlayerLineId(String esn, String lineId) {
         return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LINE_ID, lineId, esn) > 0;
+    }
+
+    @Override
+    public String getPlayerLineId(String esn) {
+        List<String> query = getJdbcTemplate().query(SQL_GET_PLAYER_LINE_ID, new SingleColumnRowMapper<String>(), esn);
+        return query.isEmpty() ? "0" : query.get(0);
+    }
+
+    @Override
+    public boolean isAdmin(String lineId) {
+        List<Integer> query = getJdbcTemplate().query(SQL_CHECK_IS_ADMIN, new SingleColumnRowMapper<Integer>(), lineId);
+        return query.get(0) != 0;
     }
 }

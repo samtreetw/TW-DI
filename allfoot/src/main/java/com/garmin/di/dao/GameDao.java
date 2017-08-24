@@ -30,4 +30,8 @@ public interface GameDao {
     boolean addAdmin(String name, String lineId);
 
     boolean updatePlayerLineId(String esn, String lineId);
+
+    String getPlayerLineId(String esn);
+
+    boolean isAdmin(String lineId);
 }

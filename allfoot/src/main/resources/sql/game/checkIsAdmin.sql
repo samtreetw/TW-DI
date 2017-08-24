@@ -1,0 +1,1 @@
+SELECT count(1) from admin_user WHERE line_id = ?;

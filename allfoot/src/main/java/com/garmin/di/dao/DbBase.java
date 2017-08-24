@@ -1,6 +1,7 @@
 package com.garmin.di.dao;
 
 import com.garmin.di.dao.util.ResourceUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
@@ -54,6 +55,10 @@ public class DbBase extends JdbcDaoSupport {
     public void drop() {
         List<String> sqls = getJdbcTemplate().query(SQL_GET_DROP_TABLES_SQL, new SingleColumnRowMapper<String>());
         for (String dropSql : sqls) {
+            if (StringUtils.containsIgnoreCase(dropSql, "admin_user")) {
+                // Preserve admin_user table when resetting DB
+                continue;
+            }
             getJdbcTemplate().update(dropSql);
         }
     }
