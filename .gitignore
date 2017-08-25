@@ -43,6 +43,9 @@ cmake-build-debug/
 out/
 target/
 
+# Eclipse
+allfoot/.**
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 

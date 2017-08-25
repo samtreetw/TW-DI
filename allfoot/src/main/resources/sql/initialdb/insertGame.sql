@@ -107,3 +107,26 @@ INSERT INTO player (esn, location, line_id) values ('5', 0, '0');
 INSERT INTO player (esn, location, line_id) values ('6', 0, '0');
 INSERT INTO player (esn, location, line_id) values ('7', 0, '0');
 INSERT INTO player (esn, location, line_id) values ('8', 0, '0');
+
+INSERT INTO questions (question_id, question_text, answer_id) values (1, 'Who am I?', 1)
+INSERT INTO questions (question_id, question_text, answer_id) values (2, 'Where do you live?', 2)
+INSERT INTO questions (question_id, question_text, answer_id) values (3, 'Where are you from?', 3)
+INSERT INTO questions (question_id, question_text, answer_id) values (4, 'How old are you?', 4)
+
+INSERT INTO options (question_id, options_id, options_text) values (1, 1, 'Jerry')
+INSERT INTO options (question_id, options_id, options_text) values (1, 2, 'Leo')
+INSERT INTO options (question_id, options_id, options_text) values (1, 3, 'Samuel')
+INSERT INTO options (question_id, options_id, options_text) values (1, 4, 'Chris')
+INSERT INTO options (question_id, options_id, options_text) values (2, 1, 'Taipei')
+INSERT INTO options (question_id, options_id, options_text) values (2, 2, 'Taichung')
+INSERT INTO options (question_id, options_id, options_text) values (2, 3, 'Tainan')
+INSERT INTO options (question_id, options_id, options_text) values (2, 4, 'Kauhsiung')
+INSERT INTO options (question_id, options_id, options_text) values (3, 1, 'Taiwan')
+INSERT INTO options (question_id, options_id, options_text) values (3, 2, 'China')
+INSERT INTO options (question_id, options_id, options_text) values (3, 3, 'America')
+INSERT INTO options (question_id, options_id, options_text) values (3, 4, 'Paris')
+INSERT INTO options (question_id, options_id, options_text) values (4, 1, '29')
+INSERT INTO options (question_id, options_id, options_text) values (4, 2, '30')
+INSERT INTO options (question_id, options_id, options_text) values (4, 3, '31')
+INSERT INTO options (question_id, options_id, options_text) values (4, 4, '32')
+
