@@ -15,7 +15,7 @@ public interface GameDao {
 
     boolean joinGame(String esn);
 
-    List<LinkedRoom> getLinkedRoom(int roomId);
+    List<LinkedRoom> getLinkedRoom(int roomId, int excludeRoomId);
 
     int getCurrentRoom(String esn);
 

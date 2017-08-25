@@ -1,9 +1,5 @@
 package com.garmin.di.util;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
 /**
  * Created with IntelliJ IDEA.
  * User: HuangLeo
@@ -13,19 +9,12 @@ import java.util.Properties;
 
 public class LineBotProperties {
 
-    private static Properties properties;
     private static String channelToken;
     private static String channelSecret;
+
     static {
-        properties = new Properties();
-        try {
-            String configFile = LineBotProperties.class.getClassLoader().getResource("line-bot.properties").getPath();
-            properties.load(new FileInputStream(configFile));
-        } catch (IOException | NullPointerException ex) {
-            ex.printStackTrace();
-        }
-        channelToken = properties.getProperty("line.bot.channelToken", "token");
-        channelSecret = properties.getProperty("line.bot.channelSecret", "secret");
+        channelToken = System.getProperty("line.bot.channelToken", "token");
+        channelSecret = System.getProperty("line.bot.channelSecret", "secret");
     }
 
     //getters and setters

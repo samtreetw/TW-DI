@@ -73,7 +73,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
     @Override
-    public List<LinkedRoom> getLinkedRoom(int roomId) {
+    public List<LinkedRoom> getLinkedRoom(int roomId, int excludeRoomId) {
         return getJdbcTemplate().query(SQL_GET_LINKED_ROOM, new RowMapper<LinkedRoom>() {
             @Override
             public LinkedRoom mapRow(ResultSet resultSet, int i) throws SQLException {
@@ -83,7 +83,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
                 lr.setRoomName(resultSet.getString("name"));
                 return lr;
             }
-        }, roomId);
+        }, roomId, excludeRoomId);
     }
 
     @Override

@@ -27,6 +27,11 @@ public interface AdminService {
     @Produces(MediaType.APPLICATION_JSON)
     boolean setGameStatus(@PathParam("status") String status);
 
+    @PUT
+    @Path("/{esn}/status/{status}")
+    @Produces(MediaType.APPLICATION_JSON)
+    boolean updatePlayerStatus(@PathParam("esn") String esn, @PathParam("status") String status);
+
     boolean addRoomRecord(String esn, int roomId);
 
 }

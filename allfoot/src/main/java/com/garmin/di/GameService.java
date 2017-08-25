@@ -20,6 +20,11 @@ import java.util.List;
  */
 public interface GameService {
 
+    /**
+     * No longer used
+     * @param esn
+     * @return
+     */
     @POST
     @Path("/join/{esn}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -34,4 +39,6 @@ public interface GameService {
     @Path("/{esn}/goto/{room_id}")
     @Produces(MediaType.APPLICATION_JSON)
     Room gotoRoom(@PathParam("esn") String esn, @PathParam("room_id") Integer roomId);
+
+
 }

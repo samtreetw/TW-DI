@@ -16,9 +16,11 @@ CREATE TABLE IF NOT EXISTS room_link (
 );
 
 CREATE TABLE IF NOT EXISTS player (
-  esn      VARCHAR,
-  location INT,
-  line_id  VARCHAR
+  esn               VARCHAR,
+  location          INT,
+  previous_location INT,
+  line_id           VARCHAR,
+  status            INT
 );
 
 CREATE TABLE IF NOT EXISTS room_event (
