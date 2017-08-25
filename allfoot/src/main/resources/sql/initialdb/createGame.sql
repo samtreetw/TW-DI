@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS player (
 CREATE TABLE IF NOT EXISTS room_event (
   room_id    INT,
   player_esn VARCHAR,
-  rank       INT,
+  rank       INT
 );
 
 CREATE TABLE IF NOT EXISTS admin_user (
@@ -35,14 +35,14 @@ CREATE TABLE IF NOT EXISTS admin_user (
 );
 
 CREATE TABLE IF NOT EXISTS questions (
-	question_id INT,
-	question_text VARCHAR,
-	answer_id INT
+  question_id   INT,
+  question_text VARCHAR,
+  answer_id     INT
 );
 
 CREATE TABLE IF NOT EXISTS options (
-	question_id INT,
-	options_id INT,
-	options_text VARCHAR
-)
+  question_id  INT,
+  options_id   INT,
+  options_text VARCHAR
+);
 

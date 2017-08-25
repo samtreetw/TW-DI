@@ -2,6 +2,8 @@ package com.garmin.di.dao;
 
 import com.garmin.di.dao.util.ResourceUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
@@ -20,6 +22,8 @@ import java.util.List;
  */
 @Component
 public class DbBase extends JdbcDaoSupport {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String SQL_CREATE_GAME =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/initialdb/createGame.sql"));
@@ -49,6 +53,7 @@ public class DbBase extends JdbcDaoSupport {
     }
 
     public void reset() {
+        logger.info("DB been reset");
         getJdbcTemplate().update(SQL_RESET_STATUS);
     }
 
@@ -66,6 +71,7 @@ public class DbBase extends JdbcDaoSupport {
     private void insertConstantsData() {
         List<Integer> count = getJdbcTemplate().query(SQL_CHECK_INITIAL, new SingleColumnRowMapper<Integer>());
         if (count.get(0) == 0) {
+            logger.info("initialize db data");
             getJdbcTemplate().update(SQL_INSERT_GAME);
         }
     }
