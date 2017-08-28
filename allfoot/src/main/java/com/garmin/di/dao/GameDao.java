@@ -34,4 +34,6 @@ public interface GameDao {
     String getPlayerLineId(String esn);
 
     boolean isAdmin(String lineId);
+    
+    int getAnswer(int eventId);
 }

@@ -23,10 +23,16 @@ CREATE TABLE IF NOT EXISTS player (
   status            INT
 );
 
-CREATE TABLE IF NOT EXISTS room_event (
+CREATE TABLE IF NOT EXISTS room_record (
   room_id    INT,
   player_esn VARCHAR,
   rank       INT
+);
+
+CREATE TABLE IF NOT EXISTS room_event (
+  room_id		INT,
+  event_type 	INT,
+  event_id		INT
 );
 
 CREATE TABLE IF NOT EXISTS admin_user (
@@ -35,6 +41,7 @@ CREATE TABLE IF NOT EXISTS admin_user (
 );
 
 CREATE TABLE IF NOT EXISTS questions (
+<<<<<<< 1aac850c152aedc7294db9e411eb56035f779585
   question_id   INT,
   question_text VARCHAR,
   answer_id     INT
@@ -45,4 +52,16 @@ CREATE TABLE IF NOT EXISTS options (
   options_id   INT,
   options_text VARCHAR
 );
+=======
+	question_id 	INT,
+	question_text 	VARCHAR,
+	answer_id 		INT
+);
+
+CREATE TABLE IF NOT EXISTS options (
+	question_id 	INT,
+	options_id 		INT,
+	options_text 	VARCHAR
+)
+>>>>>>> Get room with an event, get answer for the event.
 

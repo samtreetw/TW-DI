@@ -1,3 +1,3 @@
-SELECT *
-FROM room
-WHERE room_id = ?;
+SELECT answer_id
+FROM questions
+WHERE question_id = ?;

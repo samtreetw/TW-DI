@@ -2,11 +2,18 @@ package com.garmin.di.dao.impl;
 
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.util.ResourceUtil;
+import com.garmin.di.dto.EventContent;
+import com.garmin.di.dto.EventType;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Room;
+import com.garmin.di.dto.RoomEvent;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,6 +21,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -42,8 +50,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ROOM =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoom.sql"));
 
-    private static final String SQL_INSERT_ROOM_EVENT =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomEvent.sql"));
+    private static final String SQL_INSERT_ROOM_RECORD =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomRecord.sql"));
 
     private static final String SQL_UPDATE_GAME_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
@@ -59,6 +67,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     private static final String SQL_CHECK_IS_ADMIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/checkIsAdmin.sql"));
+    
+    private static final String SQL_GET_ROOM_QUESTION =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomQuestion.sql"));
+    
+    private static final String SQL_GET_ANSWER =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAnswer.sql"));
 
     @Autowired
     public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
@@ -101,15 +115,40 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     public Room getRoom(int roomId) {
         List<Room> rooms = getJdbcTemplate().query(SQL_GET_ROOM, new RowMapper<Room>() {
             @Override
-            public Room mapRow(ResultSet resultSet, int i) throws SQLException {
+            public Room mapRow(ResultSet resultSet, int rowNum) throws SQLException {
                 Room room = new Room();
+                RoomEvent roomEvent = new RoomEvent();
                 room.setRoomId(resultSet.getInt("room_id"));
                 room.setName(resultSet.getString("name"));
                 room.setDesc(resultSet.getString("description"));
+                roomEvent.setEventId(resultSet.getInt("event_id"));
+                roomEvent.setEventType(EventType.values()[resultSet.getInt("event_type")]);
+                room.setRoomEvent(roomEvent);
                 return room;
             }
         }, roomId);
-        return rooms.isEmpty() ? null : rooms.get(0);
+        Room room = rooms.isEmpty() ? null : rooms.get(0);
+        if (room != null) {
+	        EventContent eventContents = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContent>() {
+
+	        	EventContent eventContent = new EventContent();
+				@Override
+				public EventContent extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+					
+					while(resultSet.next()) {
+						if (StringUtils.isEmpty(eventContent.getEvent())) {
+							eventContent.setEvent(resultSet.getString("question_text"));
+						}
+						eventContent.addEventOptions(resultSet.getString("options_text"));
+					}
+					return eventContent;
+				}
+	
+				
+			}, room.getRoomEvent().getEventId());
+	        room.getRoomEvent().setEventContent(eventContents);
+        }
+        return room; 
     }
 
     @Override
@@ -122,7 +161,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("room_id", roomId);
         source.addValue("esn", esn);
-        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_EVENT, source) > 0;
+        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_RECORD, source) > 0;
     }
 
     @Override
@@ -149,4 +188,18 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         List<Integer> query = getJdbcTemplate().query(SQL_CHECK_IS_ADMIN, new SingleColumnRowMapper<Integer>(), lineId);
         return query.get(0) != 0;
     }
+
+	@Override
+	public int getAnswer(int eventId) {
+		List<Integer> answerIds = getJdbcTemplate().query(SQL_GET_ANSWER, new SingleColumnRowMapper<Integer>(), eventId);
+		if (answerIds.size() == 0) {
+			return 0;
+		} else if (answerIds.get(0) == null) {
+			return 0;
+		} else {
+			return answerIds.get(0);
+		}
+	}
+    
+    
 }

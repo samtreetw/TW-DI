@@ -10,6 +10,7 @@ public class Room {
     private int roomId;
     private String name;
     private String desc;
+    private RoomEvent roomEvent;
 
     public int getRoomId() {
         return roomId;
@@ -34,4 +35,12 @@ public class Room {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+	public RoomEvent getRoomEvent() {
+		return roomEvent;
+	}
+
+	public void setRoomEvent(RoomEvent roomEvent) {
+		this.roomEvent = roomEvent;
+	}
 }
