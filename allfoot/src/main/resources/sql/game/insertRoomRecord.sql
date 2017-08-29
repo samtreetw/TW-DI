@@ -1,4 +1,4 @@
-INSERT INTO room_event (room_id, player_esn, rank) SELECT
+INSERT INTO room_record (room_id, player_esn, rank) SELECT
                                                      :room_id,
                                                      :esn,
                                                      (SELECT count(1)

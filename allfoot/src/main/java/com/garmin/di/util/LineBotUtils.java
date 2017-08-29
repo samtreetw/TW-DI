@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Response;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -219,8 +218,9 @@ public class LineBotUtils {
                     .replyMessage(replyMessage)
                     .execute();
             logger.info(response.code() + " " + response.message());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.toString());
         }
     }
 
@@ -241,8 +241,9 @@ public class LineBotUtils {
                     .pushMessage(pushMessage)
                     .execute();
             logger.info(response.code() + " " + response.message());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.toString());
         }
     }
 
@@ -263,8 +264,9 @@ public class LineBotUtils {
                             .multicast(multicast)
                             .execute();
             logger.info(response.code() + " " + response.message());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.toString());
         }
     }
 
@@ -287,8 +289,9 @@ public class LineBotUtils {
             } else {
                 logger.info(response.code() + " " + response.message());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            logger.error(e.toString());
         }
         return null;
     }

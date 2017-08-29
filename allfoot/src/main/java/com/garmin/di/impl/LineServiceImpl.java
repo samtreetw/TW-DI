@@ -2,6 +2,7 @@ package com.garmin.di.impl;
 
 import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
+import com.garmin.di.dto.EventContent;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
@@ -10,10 +11,11 @@ import com.linecorp.bot.model.event.*;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.message.*;
 import com.linecorp.bot.model.profile.UserProfileResponse;
-import com.linecorp.bot.servlet.LineBotCallbackException;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -38,6 +39,7 @@ public class LineServiceImpl implements LineService {
     @Context
     private HttpServletRequest httpServletRequest;
     private static LineBotCallbackRequestParser lineBotCallbackRequestParser = new LineBotCallbackRequestParser(new LineSignatureValidator(LineBotProperties.getChannelSecret().getBytes()));
+    private static Logger logger = LoggerFactory.getLogger(LineBotUtils.class);
 
     private DbBase dbBase;
     private GameDao gameDao;
@@ -80,10 +82,9 @@ public class LineServiceImpl implements LineService {
                         break;
                 }
             }
-        } catch (LineBotCallbackException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
         }
         // Always return 200 OK to line message request
         return javax.ws.rs.core.Response.ok().build();
@@ -92,7 +93,7 @@ public class LineServiceImpl implements LineService {
     /*
      * Event Handlers
      */
-    private void handleMessageEvent(MessageEvent event) {
+    private void handleMessageEvent(MessageEvent event) throws Exception {
         if (event.getMessage() instanceof TextMessageContent) {
             handleTextMessage(event);
         } else if (event.getMessage() instanceof ImageMessageContent) {
@@ -124,7 +125,7 @@ public class LineServiceImpl implements LineService {
     private void handleLeaveEvent(LeaveEvent event) {
     }
 
-    private void handlePostbackEvent(PostbackEvent event) {
+    private void handlePostbackEvent(PostbackEvent event) throws Exception {
 
         // Postback content data should be like "name1:value1,name2:value2 ..."
         ArrayList<Pair<String, String>> arrayList = new ArrayList<>();
@@ -145,7 +146,8 @@ public class LineServiceImpl implements LineService {
                     }
                     break;
                 default:
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(item.getValue()));
+                    Integer answer = gameDao.getAnswer(Integer.valueOf(item.getKey()));
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
                     break;
             }
         }
@@ -159,7 +161,7 @@ public class LineServiceImpl implements LineService {
     /*
      * Message Handlers
      */
-    private void handleTextMessage(final MessageEvent event) {
+    private void handleTextMessage(final MessageEvent event) throws Exception {
         String originText = ((TextMessageContent) event.getMessage()).getText();
         final String question;
         final ArrayList<Pair<String, String>> answers ;
@@ -190,12 +192,12 @@ public class LineServiceImpl implements LineService {
                 break;
             case "test":
                 // Push message test
-                question = "This is a test question.";
+                EventContent eventContent = gameDao.getRoom(1).getRoomEvent().getEventContent();
+                question = eventContent.getEvent();
                 answers = new ArrayList<>();
-                answers.add(new ImmutablePair<>("Answer 1", "1"));
-                answers.add(new ImmutablePair<>("Answer 2", "2"));
-                answers.add(new ImmutablePair<>("Answer 3", "3"));
-                answers.add(new ImmutablePair<>("Answer 4", "4"));
+                for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
+                    answers.add(new ImmutablePair<>(eventContent.getEventOptions().get(i), String.valueOf(i+1)));
+                }
                 Timer timer = new Timer(10000, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {

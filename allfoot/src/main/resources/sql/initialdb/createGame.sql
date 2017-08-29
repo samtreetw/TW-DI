@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS admin_user (
 );
 
 CREATE TABLE IF NOT EXISTS questions (
-<<<<<<< 1aac850c152aedc7294db9e411eb56035f779585
   question_id   INT,
   question_text VARCHAR,
   answer_id     INT
@@ -52,16 +51,3 @@ CREATE TABLE IF NOT EXISTS options (
   options_id   INT,
   options_text VARCHAR
 );
-=======
-	question_id 	INT,
-	question_text 	VARCHAR,
-	answer_id 		INT
-);
-
-CREATE TABLE IF NOT EXISTS options (
-	question_id 	INT,
-	options_id 		INT,
-	options_text 	VARCHAR
-)
->>>>>>> Get room with an event, get answer for the event.
-
