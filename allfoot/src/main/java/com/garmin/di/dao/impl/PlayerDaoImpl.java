@@ -62,8 +62,8 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
 	@Override
-	public boolean setPlayerScore(int score) {
-		return getJdbcTemplate().update(SQL_SET_PLAYER_SCORE, score) > 0;
+	public boolean setPlayerScore(String esn, int score) {
+		return getJdbcTemplate().update(SQL_SET_PLAYER_SCORE, score, esn) > 0;
 	}
     
     

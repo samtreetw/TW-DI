@@ -1,11 +1,16 @@
 package com.garmin.di.test.impl;
 
+import javax.ws.rs.Path;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.test.TestService;
 
+@Path("/test-service")
+@Service
 public class TestServiceImpl implements TestService {
 
 	private GameDao gameDao;
