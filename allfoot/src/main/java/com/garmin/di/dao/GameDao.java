@@ -38,7 +38,7 @@ public interface GameDao {
 
     boolean isAdmin(String lineId);
     
-    int getAnswer(int eventId);
+    int getAnswer(String eventId);
     
     boolean lockPlayer(String esn);
     

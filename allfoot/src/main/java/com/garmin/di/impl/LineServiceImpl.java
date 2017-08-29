@@ -146,7 +146,7 @@ public class LineServiceImpl implements LineService {
                     }
                     break;
                 default:
-                    Integer answer = gameDao.getAnswer(Integer.valueOf(item.getKey()));
+                    Integer answer = gameDao.getAnswer(item.getKey());
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
                     break;
             }

@@ -248,7 +248,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
 	@Override
-	public int getAnswer(int eventId) {
+	public int getAnswer(String eventId) {
 		List<Integer> answerIds = getJdbcTemplate().query(SQL_GET_ANSWER, new SingleColumnRowMapper<Integer>(), eventId);
 		if (answerIds.size() == 0) {
 			return 0;
