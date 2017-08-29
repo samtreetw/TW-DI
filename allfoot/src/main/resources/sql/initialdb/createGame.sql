@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS player (
   location          INT,
   previous_location INT,
   line_id           VARCHAR,
-  status            INT
+  status            INT,
+  score				INT
 );
 
 CREATE TABLE IF NOT EXISTS room_record (
@@ -52,4 +53,9 @@ CREATE TABLE IF NOT EXISTS options (
   question_id  VARCHAR,
   options_id   INT,
   options_text VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS score_map (
+  rank		INT,
+  score		INT
 );

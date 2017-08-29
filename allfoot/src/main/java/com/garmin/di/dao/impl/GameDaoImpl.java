@@ -8,6 +8,7 @@ import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.EventType;
 import com.garmin.di.dto.LinkedRoom;
+import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
 
@@ -80,6 +81,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ANSWER =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAnswer.sql"));
 
+    private static final String SQL_GET_ROOM_LAST_RANK =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomLastRank.sql"));
+    
+    private static final String SQL_GET_RANK_SCORE =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRankScore.sql"));
+    
     private PlayerDao playerDao;
     
     
@@ -165,6 +172,46 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         }
         return room; 
     }
+    
+    @Override
+	public boolean passRoom(String esn, int roomId) {
+    	try {
+	    	//TODO checkQueue.
+	    	
+	    	// Calculate score.
+	    	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
+	
+				@Override
+				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+					int rank = 0;
+					while (rs.next()) {
+						rank = rs.getInt("rank");
+					}
+					return rank;
+				}
+				
+			}, roomId);
+			++lastRank;
+			// Get score of rank.
+			int rankScore = getJdbcTemplate().query(SQL_GET_RANK_SCORE, new ResultSetExtractor<Integer>(){
+	
+				@Override
+				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+					int rankScore = 0;
+					while (rs.next()) {
+						rankScore = rs.getInt("score");
+					}
+					return rankScore;
+				}
+			}, lastRank);
+			// Update user score.
+			Player player = playerDao.getPlayer(esn);
+			int score = player.getScore() + rankScore;
+			return playerDao.setPlayerScore(score);
+    	} catch (Exception e) {
+    		return false;
+		}
+	}
 
     @Override
     public boolean updateGameStatus(GameStatus gameStatus) {

@@ -156,5 +156,14 @@ INSERT INTO options (question_id, options_id, options_text) values ('8', 1, 'Liv
 INSERT INTO options (question_id, options_id, options_text) values ('8', 2, 'Die');
 INSERT INTO options (question_id, options_id, options_text) values ('9', 1, 'Yes');
 INSERT INTO options (question_id, options_id, options_text) values ('9', 2, 'No');
-
+-- score map
+INSERT INTO score_map (rank, score) values (1, 3);
+INSERT INTO score_map (rank, score) values (2, 3);
+INSERT INTO score_map (rank, score) values (3, 3);
+INSERT INTO score_map (rank, score) values (4, 2);
+INSERT INTO score_map (rank, score) values (5, 2);
+INSERT INTO score_map (rank, score) values (6, 2);
+INSERT INTO score_map (rank, score) values (7, 1);
+INSERT INTO score_map (rank, score) values (8, 1);
+INSERT INTO score_map (rank, score) values (9, 1);
 

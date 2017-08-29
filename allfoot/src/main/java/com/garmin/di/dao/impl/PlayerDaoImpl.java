@@ -31,6 +31,9 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_SET_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerStatus.sql"));
     
+    private static final String SQL_SET_PLAYER_SCORE =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerScore.sql"));
+    
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -45,6 +48,8 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
                 player.setCurrentRoomId(rs.getInt("location"));
                 player.setPreviousRoomId(rs.getInt("previous_location"));
                 player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
+                player.setLineId(rs.getString("line_id"));
+                player.setScore(rs.getInt("score"));
                 return player;
             }
         }, esn);
@@ -55,5 +60,12 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     public boolean setPlayerStatus(String esn, PlayerStatus playerStatus) {
         return getJdbcTemplate().update(SQL_SET_PLAYER_STATUS, playerStatus.getId(), esn) > 0;
     }
+
+	@Override
+	public boolean setPlayerScore(int score) {
+		return getJdbcTemplate().update(SQL_SET_PLAYER_SCORE, score) > 0;
+	}
+    
+    
 
 }

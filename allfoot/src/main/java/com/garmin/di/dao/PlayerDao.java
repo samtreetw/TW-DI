@@ -22,4 +22,6 @@ public interface PlayerDao {
      */
     boolean setPlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
     
+    boolean setPlayerScore(int score);
+    
 }

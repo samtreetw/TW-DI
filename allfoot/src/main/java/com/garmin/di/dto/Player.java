@@ -13,6 +13,8 @@ public class Player {
     private int currentRoomId;
     private int previousRoomId;
     private PlayerStatus playerStatus;
+    private String lineId;
+    private int score;
 
     public int getCurrentRoomId() {
         return currentRoomId;
@@ -37,4 +39,20 @@ public class Player {
     public void setPlayerStatus(PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
     }
+
+	public String getLineId() {
+		return lineId;
+	}
+
+	public void setLineId(String lineId) {
+		this.lineId = lineId;
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
+	}
 }

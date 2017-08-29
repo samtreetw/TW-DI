@@ -23,6 +23,8 @@ public interface GameDao {
     boolean gotoRoom(String esn, int roomId);
 
     Room getRoom(String esn, int roomId);
+    
+    boolean passRoom(String esn, int roomId);
 
     boolean updateGameStatus(GameStatus gameStatus);
 
@@ -41,4 +43,5 @@ public interface GameDao {
     boolean lockPlayer(String esn);
     
     boolean unLockPlayer(String esn);
+    
 }
