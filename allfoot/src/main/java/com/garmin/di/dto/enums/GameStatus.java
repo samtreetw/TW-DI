@@ -1,4 +1,4 @@
-package com.garmin.di.domain;
+package com.garmin.di.dto.enums;
 
 import java.util.NoSuchElementException;
 

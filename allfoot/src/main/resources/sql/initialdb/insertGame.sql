@@ -166,4 +166,11 @@ INSERT INTO score_map (rank, score) values (6, 2);
 INSERT INTO score_map (rank, score) values (7, 1);
 INSERT INTO score_map (rank, score) values (8, 1);
 INSERT INTO score_map (rank, score) values (9, 1);
+-- action
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("change_score", "You have to select a team to exchange your score.", "Some team has exchanged your score.");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("stole_score", "You can steal 3 point from other team.", "Some team has exchanged your score.");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("hide_event", "You hide one of your room event.", "");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("back_to_lobby", "You are transfered to the lobby.", "");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("add_steps", "You increase your distance to every room in your rest game.", "");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ("double_score", "You double up your current score", "");
 

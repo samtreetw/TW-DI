@@ -3,12 +3,12 @@ package com.garmin.di.impl;
 import com.garmin.di.GameService;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
-import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
+import com.garmin.di.dto.enums.PlayerStatus;
 import com.garmin.di.util.LineBotUtils;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;

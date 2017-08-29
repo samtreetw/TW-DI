@@ -2,12 +2,14 @@ package com.garmin.di.dao.impl;
 
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dao.util.ResourceUtil;
-import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.Player;
+import com.garmin.di.dto.enums.PlayerStatus;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
@@ -28,11 +30,29 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_GET_PLAYER =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayer.sql"));
 
-    private static final String SQL_SET_PLAYER_STATUS =
+    private static final String SQL_UPDATE_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerStatus.sql"));
     
-    private static final String SQL_SET_PLAYER_SCORE =
+    private static final String SQL_GET_PLAYER_STATUS =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerStatus.sql"));
+    
+    private static final String SQL_UPDATE_PLAYER_SCORE =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerScore.sql"));
+    
+    private static final String SQL_GET_PLAYER_SCORE =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScore.sql"));
+    
+    private static final String SQL_UPDATE_PLAYER_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerLineId.sql"));
+
+    private static final String SQL_GET_PLAYER_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerLineId.sql"));
+    
+    private static final String SQL_UPDATE_PLAYER_LOCATION =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerLocation.sql"));
+    
+    private static final String SQL_GET_PLAYER_LOCATION =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerLocation.sql"));
     
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
@@ -57,15 +77,47 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
     @Override
-    public boolean setPlayerStatus(String esn, PlayerStatus playerStatus) {
-        return getJdbcTemplate().update(SQL_SET_PLAYER_STATUS, playerStatus.getId(), esn) > 0;
+    public boolean updatePlayerStatus(String esn, PlayerStatus playerStatus) {
+        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_STATUS, playerStatus.getId(), esn) > 0;
     }
 
 	@Override
-	public boolean setPlayerScore(String esn, int score) {
-		return getJdbcTemplate().update(SQL_SET_PLAYER_SCORE, score, esn) > 0;
+	public boolean updatePlayerScore(String esn, int score) {
+		return getJdbcTemplate().update(SQL_UPDATE_PLAYER_SCORE, score, esn) > 0;
 	}
     
-    
+	@Override
+    public int getPlayerLocation(String esn) {
+    	 List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_LOCATION, new SingleColumnRowMapper<Integer>(), esn);
+         return query.isEmpty() ? -1 : query.get(0);
+    }
 
+	@Override
+    public boolean updatePlayerLocation(String esn, int roomId) {
+        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LOCATION, roomId, esn) > 0;
+    }
+	
+	@Override
+    public boolean updatePlayerLineId(String esn, String lineId) {
+        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LINE_ID, lineId, esn) > 0;
+    }
+
+    @Override
+    public String getPlayerLineId(String esn) {
+        List<String> query = getJdbcTemplate().query(SQL_GET_PLAYER_LINE_ID, new SingleColumnRowMapper<String>(), esn);
+        return query.isEmpty() ? "0" : query.get(0);
+    }
+
+	@Override
+	public int getPlayerScore(String esn) {
+		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE, new SingleColumnRowMapper<Integer>(), esn);
+        return query.isEmpty() ? 0 : query.get(0);
+	}
+
+	@Override
+	public PlayerStatus getPlayerStatus(String esn) {
+		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_STATUS, new SingleColumnRowMapper<Integer>(), esn);
+        return query.isEmpty() ? PlayerStatus.FREE : PlayerStatus.lookup(query.get(0));
+	}
+	
 }

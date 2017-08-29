@@ -3,14 +3,14 @@ package com.garmin.di.dao.impl;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dao.util.ResourceUtil;
-import com.garmin.di.domain.GameStatus;
-import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.EventContent;
-import com.garmin.di.dto.EventType;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
+import com.garmin.di.dto.enums.EventType;
+import com.garmin.di.dto.enums.GameStatus;
+import com.garmin.di.dto.enums.PlayerStatus;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +42,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_PLAYER_JOIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/playerJoin.sql"));
 
-    private static final String SQL_GET_PLAYER_LOCATION =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getPlayerLocation.sql"));
-
     private static final String SQL_GET_LINKED_ROOM =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getLinkedRoom.sql"));
-
-    private static final String SQL_UPDATE_PLAYER_LOCATION =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updatePlayerLocation.sql"));
 
     private static final String SQL_GET_ROOM =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoom.sql"));
@@ -65,12 +59,6 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     private static final String SQL_INSERT_ADMIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertAdmin.sql"));
-
-    private static final String SQL_UPDATE_PLAYER_LINE_ID =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updatePlayerLineId.sql"));
-
-    private static final String SQL_GET_PLAYER_LINE_ID =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getPlayerLineId.sql"));
 
     private static final String SQL_CHECK_IS_ADMIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/checkIsAdmin.sql"));
@@ -119,14 +107,13 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     @Override
     public int getCurrentRoom(String esn) {
-        List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_LOCATION, new SingleColumnRowMapper<Integer>(), esn);
-        return query.isEmpty() ? -1 : query.get(0);
+       return playerDao.getPlayerLocation(esn);
     }
 
     @Override
     public boolean gotoRoom(String esn, int roomId) {
     	lockPlayer(esn);
-        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LOCATION, roomId, esn) > 0;
+        return playerDao.updatePlayerLocation(esn, roomId);
     }
 
     @Override
@@ -207,9 +194,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 			}
 		}, lastRank);
 		// Update user score.
-		Player player = playerDao.getPlayer(esn);
-		int score = player.getScore() + rankScore;
-		return playerDao.setPlayerScore(esn, score);
+		int score = playerDao.getPlayerScore(esn) + rankScore;
+		return playerDao.updatePlayerScore(esn, score);
 	}
 
     @Override
@@ -234,17 +220,6 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
     @Override
-    public boolean updatePlayerLineId(String esn, String lineId) {
-        return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LINE_ID, lineId, esn) > 0;
-    }
-
-    @Override
-    public String getPlayerLineId(String esn) {
-        List<String> query = getJdbcTemplate().query(SQL_GET_PLAYER_LINE_ID, new SingleColumnRowMapper<String>(), esn);
-        return query.isEmpty() ? "0" : query.get(0);
-    }
-
-    @Override
     public boolean isAdmin(String lineId) {
         List<Integer> query = getJdbcTemplate().query(SQL_CHECK_IS_ADMIN, new SingleColumnRowMapper<Integer>(), lineId);
         return query.get(0) != 0;
@@ -264,12 +239,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
 	@Override
 	public boolean lockPlayer(String esn) {
-		return playerDao.setPlayerStatus(esn, PlayerStatus.LOCK);
+		return playerDao.updatePlayerStatus(esn, PlayerStatus.LOCK);
 	}
 
 	@Override
 	public boolean unLockPlayer(String esn) {
-		return playerDao.setPlayerStatus(esn, PlayerStatus.FREE);
+		return playerDao.updatePlayerStatus(esn, PlayerStatus.FREE);
 	}
     
 }

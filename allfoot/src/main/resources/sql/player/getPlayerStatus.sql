@@ -1,0 +1,1 @@
+SELECT status from player where esn = ?;

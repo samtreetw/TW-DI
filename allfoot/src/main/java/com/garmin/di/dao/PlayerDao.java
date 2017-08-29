@@ -1,7 +1,7 @@
 package com.garmin.di.dao;
 
-import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.Player;
+import com.garmin.di.dto.enums.PlayerStatus;
 import com.sun.istack.NotNull;
 
 /**
@@ -12,16 +12,41 @@ import com.sun.istack.NotNull;
  */
 public interface PlayerDao {
 
-    Player getPlayer(String esn);
+    /***************
+     * Getter
+     ***************/
+	Player getPlayer(String esn);
+    
+    String getPlayerLineId(String esn);
+    
+    int getPlayerLocation(String esn);
+    
+    int getPlayerScore(String esn);
+    
+    PlayerStatus getPlayerStatus(String esn);
 
+    
+    
+    /***************
+     * Setter
+     ***************/
+    boolean updatePlayerLineId(String esn, String lineId);
+    
+    boolean updatePlayerLocation(String esn, int roomId);
+    
+    boolean updatePlayerScore(String esn, int score);
+    
     /**
      * 
      * @param esn
      * @param playerStatusId 0:unlock 1:lock
      * @return
      */
-    boolean setPlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
+    boolean updatePlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
     
-    boolean setPlayerScore(String esn, int score);
+    
+    
+    
+    
     
 }

@@ -1,5 +1,7 @@
 package com.garmin.di.dto;
 
+import com.garmin.di.dto.enums.EventType;
+
 public class RoomEvent {
 	private String eventId;
 	private EventType eventType;

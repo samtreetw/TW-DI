@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS room_record (
 CREATE TABLE IF NOT EXISTS room_event (
   room_id		  INT,
   event_type 	INT,
-  event_id		INT
+  event_id		VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS admin_user (
@@ -53,6 +53,12 @@ CREATE TABLE IF NOT EXISTS options (
   question_id  VARCHAR,
   options_id   INT,
   options_text VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS actions (
+  action_id      VARCHAR,
+  action_text_a	 VARCHAR,
+  action_text_b  VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS score_map (

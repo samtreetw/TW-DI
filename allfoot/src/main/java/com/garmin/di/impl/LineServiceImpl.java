@@ -2,6 +2,7 @@ package com.garmin.di.impl;
 
 import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
+import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
@@ -43,11 +44,13 @@ public class LineServiceImpl implements LineService {
 
     private DbBase dbBase;
     private GameDao gameDao;
+    private PlayerDao playerDao;
 
     @Autowired
-    public LineServiceImpl(DbBase dbBase, GameDao gameDao) {
+    public LineServiceImpl(DbBase dbBase, GameDao gameDao, PlayerDao playerDao) {
         this.dbBase = dbBase;
         this.gameDao = gameDao;
+        this.playerDao = playerDao;
     }
 
     @Override
@@ -139,7 +142,7 @@ public class LineServiceImpl implements LineService {
         for (Pair<String, String> item : arrayList) {
             switch (item.getKey()) {
                 case "UserLineID":
-                    if (gameDao.updatePlayerLineId(item.getValue(), lineId)) {
+                    if (playerDao.updatePlayerLineId(item.getValue(), lineId)) {
                         LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
                     } else {
                         LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));

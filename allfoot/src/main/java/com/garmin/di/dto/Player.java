@@ -1,6 +1,6 @@
 package com.garmin.di.dto;
 
-import com.garmin.di.domain.PlayerStatus;
+import com.garmin.di.dto.enums.PlayerStatus;
 
 /**
  * Created with IntelliJ IDEA.
