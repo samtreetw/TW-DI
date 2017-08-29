@@ -1,5 +1,6 @@
 package com.garmin.di.dao;
 
+import com.garmin.di.domain.GameStatus;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Room;
 
@@ -21,9 +22,9 @@ public interface GameDao {
 
     boolean gotoRoom(String esn, int roomId);
 
-    Room getRoom(int roomId);
+    Room getRoom(String esn, int roomId);
 
-    boolean updateGameStatus(int gameStatusId);
+    boolean updateGameStatus(GameStatus gameStatus);
 
     boolean addGameRecord(String esn, int roomId);
 
@@ -36,4 +37,8 @@ public interface GameDao {
     boolean isAdmin(String lineId);
     
     int getAnswer(int eventId);
+    
+    boolean lockPlayer(String esn);
+    
+    boolean unLockPlayer(String esn);
 }

@@ -1,7 +1,10 @@
 package com.garmin.di.dao.impl;
 
 import com.garmin.di.dao.GameDao;
+import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dao.util.ResourceUtil;
+import com.garmin.di.domain.GameStatus;
+import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.EventType;
 import com.garmin.di.dto.LinkedRoom;
@@ -52,6 +55,9 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     private static final String SQL_INSERT_ROOM_RECORD =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomRecord.sql"));
+    
+    private static final String SQL_GET_ROOM_PLAYER_RANK =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomPlayerRank.sql"));
 
     private static final String SQL_UPDATE_GAME_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
@@ -74,9 +80,13 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ANSWER =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAnswer.sql"));
 
+    private PlayerDao playerDao;
+    
+    
     @Autowired
-    public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
+    public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource, PlayerDao playerDao) {
         super.setDataSource(dataSource);
+        this.playerDao = playerDao;
     }
 
     @Override
@@ -108,11 +118,13 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     @Override
     public boolean gotoRoom(String esn, int roomId) {
+    	lockPlayer(esn);
         return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LOCATION, roomId, esn) > 0;
     }
 
     @Override
-    public Room getRoom(int roomId) {
+    public Room getRoom(String esn, int roomId) {
+    	
         List<Room> rooms = getJdbcTemplate().query(SQL_GET_ROOM, new RowMapper<Room>() {
             @Override
             public Room mapRow(ResultSet resultSet, int rowNum) throws SQLException {
@@ -121,14 +133,18 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
                 room.setRoomId(resultSet.getInt("room_id"));
                 room.setName(resultSet.getString("name"));
                 room.setDesc(resultSet.getString("description"));
-                roomEvent.setEventId(resultSet.getInt("event_id"));
+                roomEvent.setEventId(resultSet.getString("event_id"));
                 roomEvent.setEventType(EventType.values()[resultSet.getInt("event_type")]);
                 room.setRoomEvent(roomEvent);
                 return room;
             }
         }, roomId);
         Room room = rooms.isEmpty() ? null : rooms.get(0);
-        if (room != null) {
+        
+        // Check user room record. No event for the user who already been here before.
+        List<Integer> records = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+        if (room != null && records.size() == 0) {
+        	
 	        EventContent eventContents = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContent>() {
 
 	        	EventContent eventContent = new EventContent();
@@ -143,7 +159,6 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 					}
 					return eventContent;
 				}
-	
 				
 			}, room.getRoomEvent().getEventId());
 	        room.getRoomEvent().setEventContent(eventContents);
@@ -152,8 +167,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
     @Override
-    public boolean updateGameStatus(int gameStatusId) {
-        return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatusId) > 0;
+    public boolean updateGameStatus(GameStatus gameStatus) {
+        return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatus.getId()) > 0;
     }
 
     @Override
@@ -200,6 +215,15 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 			return answerIds.get(0);
 		}
 	}
-    
+
+	@Override
+	public boolean lockPlayer(String esn) {
+		return playerDao.setPlayerStatus(esn, PlayerStatus.LOCK);
+	}
+
+	@Override
+	public boolean unLockPlayer(String esn) {
+		return playerDao.setPlayerStatus(esn, PlayerStatus.FREE);
+	}
     
 }

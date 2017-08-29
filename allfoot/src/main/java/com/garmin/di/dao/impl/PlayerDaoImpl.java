@@ -30,7 +30,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 
     private static final String SQL_SET_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerStatus.sql"));
-
+    
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -52,7 +52,8 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
     @Override
-    public boolean setPlayerStatus(String esn, int playerStatusId) {
-        return getJdbcTemplate().update(SQL_SET_PLAYER_STATUS, playerStatusId, esn) > 0;
+    public boolean setPlayerStatus(String esn, PlayerStatus playerStatus) {
+        return getJdbcTemplate().update(SQL_SET_PLAYER_STATUS, playerStatus.getId(), esn) > 0;
     }
+
 }

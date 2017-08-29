@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS room_link (
   distance     INT
 );
 
+
+--status 0:unlock 1:lock
 CREATE TABLE IF NOT EXISTS player (
   esn               VARCHAR,
   location          INT,
@@ -41,13 +43,13 @@ CREATE TABLE IF NOT EXISTS admin_user (
 );
 
 CREATE TABLE IF NOT EXISTS questions (
-  question_id   INT,
+  question_id   VARCHAR,
   question_text VARCHAR,
   answer_id     INT
 );
 
 CREATE TABLE IF NOT EXISTS options (
-  question_id  INT,
+  question_id  VARCHAR,
   options_id   INT,
   options_text VARCHAR
 );

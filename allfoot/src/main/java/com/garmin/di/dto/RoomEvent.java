@@ -1,13 +1,13 @@
 package com.garmin.di.dto;
 
 public class RoomEvent {
-	private int eventId;
+	private String eventId;
 	private EventType eventType;
 	private EventContent eventContent;
-	public int getEventId() {
+	public String getEventId() {
 		return eventId;
 	}
-	public void setEventId(int eventId) {
+	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}
 	public EventType getEventType() {

@@ -1,6 +1,8 @@
 package com.garmin.di.dao;
 
+import com.garmin.di.domain.PlayerStatus;
 import com.garmin.di.dto.Player;
+import com.sun.istack.NotNull;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,6 +14,12 @@ public interface PlayerDao {
 
     Player getPlayer(String esn);
 
-    boolean setPlayerStatus(String esn, int playerStatusId);
-
+    /**
+     * 
+     * @param esn
+     * @param playerStatusId 0:unlock 1:lock
+     * @return
+     */
+    boolean setPlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
+    
 }

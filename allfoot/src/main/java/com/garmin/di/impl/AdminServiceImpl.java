@@ -45,12 +45,20 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public boolean setGameStatus(String status) {
-        return gameDao.updateGameStatus(GameStatus.valueOf(status).getId());
+    	try {
+    		return gameDao.updateGameStatus(GameStatus.valueOf(status));
+    	} catch (IllegalArgumentException e) {
+    		return false;
+		}
     }
 
     @Override
     public boolean updatePlayerStatus(String esn, String status) {
-        return playerDao.setPlayerStatus(esn, PlayerStatus.valueOf(status).getId());
+    	try {
+    		return playerDao.setPlayerStatus(esn, PlayerStatus.valueOf(status));
+    	} catch (IllegalArgumentException e) {
+    		return false;
+		}
     }
 
     @Override
