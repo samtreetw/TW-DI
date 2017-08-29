@@ -175,42 +175,38 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     
     @Override
 	public boolean passRoom(String esn, int roomId) {
-    	try {
-	    	//TODO checkQueue.
-	    	
-	    	// Calculate score.
-	    	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
-	
-				@Override
-				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
-					int rank = 0;
-					while (rs.next()) {
-						rank = rs.getInt("rank");
-					}
-					return rank;
+    	//TODO checkQueue.
+    	
+    	// Calculate score.
+    	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
+
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				int rank = 0;
+				while (rs.next()) {
+					rank = rs.getInt("rank");
 				}
-				
-			}, roomId);
-			++lastRank;
-			// Get score of rank.
-			int rankScore = getJdbcTemplate().query(SQL_GET_RANK_SCORE, new ResultSetExtractor<Integer>(){
-	
-				@Override
-				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
-					int rankScore = 0;
-					while (rs.next()) {
-						rankScore = rs.getInt("score");
-					}
-					return rankScore;
+				return rank;
+			}
+			
+		}, roomId);
+		++lastRank;
+		// Get score of rank.
+		int rankScore = getJdbcTemplate().query(SQL_GET_RANK_SCORE, new ResultSetExtractor<Integer>(){
+
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				int rankScore = 0;
+				while (rs.next()) {
+					rankScore = rs.getInt("score");
 				}
-			}, lastRank);
-			// Update user score.
-			Player player = playerDao.getPlayer(esn);
-			int score = player.getScore() + rankScore;
-			return playerDao.setPlayerScore(score);
-    	} catch (Exception e) {
-    		return false;
-		}
+				return rankScore;
+			}
+		}, lastRank);
+		// Update user score.
+		Player player = playerDao.getPlayer(esn);
+		int score = player.getScore() + rankScore;
+		return playerDao.setPlayerScore(score);
 	}
 
     @Override
