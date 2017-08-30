@@ -107,14 +107,14 @@ INSERT INTO room_link (room_id_from, room_id_to, distance) values (9, 6, 0);
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (9, 7, 0);
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (9, 8, 0);
 -- Players
-INSERT INTO player (esn, location, line_id, status) values ('1', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('2', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('3', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('4', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('5', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('6', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('7', 0, '0', 0);
-INSERT INTO player (esn, location, line_id, status) values ('8', 0, '0', 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('1', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('2', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('3', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('4', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('5', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('6', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('7', 0, '0', 0, 0);
+INSERT INTO player (esn, location, line_id, status, score) values ('8', 0, '0', 0, 0);
 -- Questions
 INSERT INTO questions (question_id, question_text, answer_id) values ('1', 'Who are you?', 1);
 INSERT INTO questions (question_id, question_text, answer_id) values ('2', 'Where do you live?', 2);

@@ -15,6 +15,7 @@ import com.linecorp.bot.model.message.template.*;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.model.response.BotApiResponse;
 import com.sun.istack.NotNull;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,6 +270,19 @@ public class LineBotUtils {
             logger.error(e.toString());
         }
     }
+
+    public static void sendPlayerChoiceOptions(MessageEvent event, String question, String questionId) {
+        ArrayList<Pair<String, String>> answers = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            answers.add(new ImmutablePair<>("Player " + String.valueOf(i+1), String.valueOf(i+1)));
+        }
+        LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", questionId, question, answers.subList(0, 4)));
+        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", questionId, question, answers.subList(4, 8)));
+    }
+
+    /*
+     * Other Utilities
+     */
 
     /**
      * Use a user ID to retrieve user profile {@link UserProfileResponse}.

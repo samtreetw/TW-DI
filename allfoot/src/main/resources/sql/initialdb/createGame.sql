@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS player (
   previous_location INT,
   line_id           VARCHAR,
   status            INT,
-  score				INT
+  score				      INT
 );
 
 CREATE TABLE IF NOT EXISTS room_record (
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS room_record (
 );
 
 CREATE TABLE IF NOT EXISTS room_event (
-  room_id		INT,
+  room_id		  INT,
   event_type 	INT,
   event_id		INT
 );
