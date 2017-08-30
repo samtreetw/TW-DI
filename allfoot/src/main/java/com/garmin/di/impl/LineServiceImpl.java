@@ -145,6 +145,14 @@ public class LineServiceImpl implements LineService {
                         LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
                     }
                     break;
+                case "PassRoom":
+                    int room = gameDao.getCurrentRoom(item.getValue());
+                    if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "has passed room " + room + "."));
+                    } else {
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Pass Room Fail."));
+                    }
+                    break;
                 default:
                     Integer answer = gameDao.getAnswer(item.getKey());
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
@@ -164,16 +172,11 @@ public class LineServiceImpl implements LineService {
     private void handleTextMessage(final MessageEvent event) throws Exception {
         String originText = ((TextMessageContent) event.getMessage()).getText();
         final String question;
-        final ArrayList<Pair<String, String>> answers ;
+        final ArrayList<Pair<String, String>> answers;
         switch (originText) {
             case "add user":
                 question = "Who are you?";
-                answers = new ArrayList<>();
-                for (int i = 0; i < 8; i++) {
-                    answers.add(new ImmutablePair<>("User " + String.valueOf(i+1), String.valueOf(i+1)));
-                }
-                LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers.subList(0, 4)));
-                LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", "UserLineID", question, answers.subList(4, 8)));
+                LineBotUtils.sendPlayerChoiceOptions(event, question, "UserLineID");
                 break;
             case "add admin":
                 UserProfileResponse userProfileResponse = LineBotUtils.getUserProfile(event.getSource().getUserId());
@@ -228,7 +231,14 @@ public class LineServiceImpl implements LineService {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Reset game fail."));
                 }
                 break;
-
+            case "pass":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    question = "Which team should pass the room?";
+                    LineBotUtils.sendPlayerChoiceOptions(event, question, "PassRoom");
+                } else {
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You are not allow to do this."));
+                }
+                break;
             default:
                 LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
                 break;

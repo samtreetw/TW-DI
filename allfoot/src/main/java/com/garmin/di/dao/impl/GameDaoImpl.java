@@ -175,8 +175,11 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     
     @Override
 	public boolean passRoom(String esn, int roomId) {
+        if (roomId == -1) {
+            return false;
+        }
     	//TODO checkQueue.
-    	
+
     	// Calculate score.
     	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
 
