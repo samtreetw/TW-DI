@@ -1,5 +1,8 @@
 package com.garmin.di.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created with IntelliJ IDEA.
  * User: HuangLeo
@@ -9,12 +12,17 @@ package com.garmin.di.util;
 
 public class LineBotProperties {
 
+    private static Logger logger = LoggerFactory.getLogger(LineBotProperties.class);
+
     private static String channelToken;
     private static String channelSecret;
 
     static {
         channelToken = System.getProperty("line.bot.channelToken", "token");
         channelSecret = System.getProperty("line.bot.channelSecret", "secret");
+
+        logger.info("Token:" + channelToken);
+        logger.info("Secret:" + channelSecret);
     }
 
     //getters and setters
