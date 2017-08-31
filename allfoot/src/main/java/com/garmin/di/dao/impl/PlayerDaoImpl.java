@@ -30,6 +30,9 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_GET_PLAYER =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayer.sql"));
 
+    private static final String SQL_GET_ALL_PLAYER =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getAllPlayers.sql"));
+    
     private static final String SQL_UPDATE_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerStatus.sql"));
     
@@ -74,6 +77,23 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
             }
         }, esn);
         return players.isEmpty() ? null : players.get(0);
+    }
+    
+    @Override
+    public List<Player> getAllPlayers() {
+    	return getJdbcTemplate().query(SQL_GET_ALL_PLAYER,new RowMapper<Player>() {
+
+			@Override
+			public Player mapRow(ResultSet rs, int rowNum) throws SQLException {
+				Player player = new Player();
+                player.setCurrentRoomId(rs.getInt("location"));
+                player.setPreviousRoomId(rs.getInt("previous_location"));
+                player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
+                player.setLineId(rs.getString("line_id"));
+                player.setScore(rs.getInt("score"));
+                return player;
+			}		
+    	});
     }
 
     @Override

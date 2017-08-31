@@ -33,7 +33,7 @@ public interface GameService {
     @GET
     @Path("/{esn}/linked")
     @Produces(MediaType.APPLICATION_JSON)
-    List<LinkedRoom> getLinked(@PathParam("esn") String esn);
+    List<LinkedRoom> getLinkedRoom(@PathParam("esn") String esn);
 
     @PUT
     @Path("/{esn}/goto/{room_id}")

@@ -47,7 +47,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public List<LinkedRoom> getLinked(String esn) {
+    public List<LinkedRoom> getLinkedRoom(String esn) {
         Player player = playerDao.getPlayer(esn);
         if (player.getPlayerStatus() == PlayerStatus.LOCK) {
             return Collections.emptyList();
@@ -59,8 +59,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public boolean gotoRoom(String esn, Integer roomId) {
     	try {
-	        gameDao.gotoRoom(esn, roomId);
-	        Room room = gameDao.getRoom(esn, roomId);
+	        Room room = gameDao.gotoRoom(esn, roomId).getRoom(); 
 	        RoomEvent roomEvent = room.getRoomEvent();
 	        EventContent eventContent = roomEvent.getEventContent();
 	        List<Pair<String, String>> answers = new ArrayList<>();
@@ -74,7 +73,6 @@ public class GameServiceImpl implements GameService {
     	} catch (Exception e) {
     		return false;
 		}
-        
     }
 
 }

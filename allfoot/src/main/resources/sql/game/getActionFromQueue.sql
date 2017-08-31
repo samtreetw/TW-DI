@@ -1,0 +1,1 @@
+SELECT action_id FROM action_queue WHERE player_esn = ? ORDER BY time_stamp DESC

@@ -2,15 +2,22 @@ package com.garmin.di.dao.impl;
 
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
+import com.garmin.di.dao.util.EventWrapper;
 import com.garmin.di.dao.util.ResourceUtil;
+import com.garmin.di.dao.util.RoomWrapper;
+import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
+import com.garmin.di.dto.EventContentImp;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
+import com.garmin.di.dto.enums.ActionEvent;
 import com.garmin.di.dto.enums.EventType;
 import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.dto.enums.PlayerStatus;
+import com.sun.istack.NotNull;
+import com.sun.istack.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +35,7 @@ import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,6 +83,15 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_RANK_SCORE =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRankScore.sql"));
     
+    private static final String SQL_POP_ACTION_QUEUE =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getActionFromQueue.sql"));
+    
+    private static final String SQL_PUT_ACTION_QUEUE =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertActionQueue.sql"));
+    
+    private static final String SQL_GET_ROOM_ACTION =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomAction.sql"));
+    
     private PlayerDao playerDao;
     
     
@@ -111,13 +128,70 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
     @Override
-    public boolean gotoRoom(String esn, int roomId) {
+    public RoomWrapper gotoRoom(String esn, int roomId) {
+    	
     	lockPlayer(esn);
-        return playerDao.updatePlayerLocation(esn, roomId);
+        
+    	playerDao.updatePlayerLocation(esn, roomId);
+        
+    	Room room = getRoom(roomId);
+    	
+    	if (room == null) {
+    		return null;
+    	}
+    	
+    	RoomWrapper roomWrapper = new RoomWrapper(room);
+    	if (!hasPlayerBeenTo(esn, roomId)) {
+	        roomWrapper.setEventWrapper(genEventWrapper(room.getRoomEvent().getEventType(), room.getRoomEvent().getEventId()));
+        }
+        
+        return roomWrapper;
+    }
+    
+    
+    private EventWrapper genEventWrapper(final EventType eventType, final String eventId) {
+    	if (eventType == EventType.QUESTION) {
+    		EventContentImp questionContent = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContentImp>() {
+	
+				@Override
+				public EventContentImp extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+					EventContentImp questionContent = new EventContentImp();
+					ArrayList<String> list = new ArrayList<String>();
+					while(resultSet.next()) {
+						if (StringUtils.isEmpty(questionContent.getEvent())) {
+							questionContent.setEvent(resultSet.getString("question_text"));
+						}
+						list.add(resultSet.getString("options_text"));
+					}
+					questionContent.setEventOptions(list);
+					return questionContent;
+				}
+				
+			}, eventId);
+    		return new EventWrapper<EventContentImp>(questionContent);
+    	} else {
+    		List<ActionContent> actionContents = getJdbcTemplate().query(SQL_GET_ROOM_ACTION, new RowMapper<ActionContent>() {
+
+				@Override
+				public ActionContent mapRow(ResultSet rs, int rowNum) throws SQLException {
+					ActionContent actionContent = new ActionContent(playerDao, ActionEvent.getByName(eventId), rs.getString("action_text_a"), rs.getString("action_text_b"));
+					return actionContent;
+				}
+    		}, eventId);
+    		return new EventWrapper<ActionContent>(actionContents.get(0));
+    	}
+    }
+    
+    @Override
+    public boolean hasPlayerBeenTo(String esn, int roomId) {
+    	// Check user room record. No event for the user who already been here before.
+        List<Integer> records = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+        return records.size() != 0; 
     }
 
+    @Nullable
     @Override
-    public Room getRoom(String esn, int roomId) {
+    public Room getRoom(int roomId) {
     	
         List<Room> rooms = getJdbcTemplate().query(SQL_GET_ROOM, new RowMapper<Room>() {
             @Override
@@ -133,31 +207,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
                 return room;
             }
         }, roomId);
-        Room room = rooms.isEmpty() ? null : rooms.get(0);
-        
-        // Check user room record. No event for the user who already been here before.
-        List<Integer> records = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
-        if (room != null && records.size() == 0) {
-        	
-	        EventContent eventContents = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContent>() {
-
-	        	EventContent eventContent = new EventContent();
-				@Override
-				public EventContent extractData(ResultSet resultSet) throws SQLException, DataAccessException {
-					
-					while(resultSet.next()) {
-						if (StringUtils.isEmpty(eventContent.getEvent())) {
-							eventContent.setEvent(resultSet.getString("question_text"));
-						}
-						eventContent.addEventOptions(resultSet.getString("options_text"));
-					}
-					return eventContent;
-				}
-				
-			}, room.getRoomEvent().getEventId());
-	        room.getRoomEvent().setEventContent(eventContents);
-        }
-        return room; 
+        return rooms.isEmpty() ? null : rooms.get(0);
     }
     
     @Override
@@ -245,6 +295,24 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 	@Override
 	public boolean unLockPlayer(String esn) {
 		return playerDao.updatePlayerStatus(esn, PlayerStatus.FREE);
+	}
+
+	@Override
+	public boolean putActionQueue(String esn, @NotNull ActionEvent actionEvent) {
+		return getJdbcTemplate().update(SQL_PUT_ACTION_QUEUE, esn, actionEvent.getName()) > 0;
+	}
+
+	@Override
+	public List<String> popActionQueue(String esn) {
+		List<String> actions = getJdbcTemplate().query(SQL_POP_ACTION_QUEUE, new RowMapper<String>() {
+
+			@Override
+			public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return rs.getString("action_id");
+			}
+			
+		}, esn);
+		return actions;
 	}
     
 }

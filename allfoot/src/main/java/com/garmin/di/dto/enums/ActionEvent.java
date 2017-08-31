@@ -15,11 +15,16 @@ public enum ActionEvent {
 		this.name = name;
 	}
 	
+	public String getName() {
+		return this.name;
+	}
+	
 	@Nullable public static ActionEvent getByName(String name) {
-		try {
-			return ActionEvent.valueOf(name);
-		} catch (Exception e) {
-			return null;
+		for (ActionEvent actionEvent : ActionEvent.values()) {
+			if (actionEvent.getName().equalsIgnoreCase(name)) {
+				return actionEvent;
+			}
 		}
+		return null;
 	}
 }

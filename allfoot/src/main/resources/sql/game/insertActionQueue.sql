@@ -1,0 +1,1 @@
+INSERT INTO action_queue (player_esn, action_id) VALUES (?, ?)

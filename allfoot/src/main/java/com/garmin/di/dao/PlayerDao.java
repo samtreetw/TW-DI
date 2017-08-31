@@ -1,5 +1,7 @@
 package com.garmin.di.dao;
 
+import java.util.List;
+
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.enums.PlayerStatus;
 import com.sun.istack.NotNull;
@@ -16,6 +18,8 @@ public interface PlayerDao {
      * Getter
      ***************/
 	Player getPlayer(String esn);
+	
+	List<Player> getAllPlayers();
     
     String getPlayerLineId(String esn);
     

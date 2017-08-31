@@ -23,15 +23,25 @@ INSERT INTO room (room_id, room_phase, name, description) values (16, 2, 'room 1
 INSERT INTO room (room_id, room_phase, name, description) values (17, 2, 'room 17', '');
 INSERT INTO room (room_id, room_phase, name, description) values (18, 2, 'room 18', '');
 -- Room events Phase 1
-INSERT INTO room_event (room_id, event_type, event_id) values (1, 1, 1);
-INSERT INTO room_event (room_id, event_type, event_id) values (2, 1, 2);
-INSERT INTO room_event (room_id, event_type, event_id) values (3, 1, 3);
-INSERT INTO room_event (room_id, event_type, event_id) values (4, 1, 4);
-INSERT INTO room_event (room_id, event_type, event_id) values (5, 1, 5);
-INSERT INTO room_event (room_id, event_type, event_id) values (6, 1, 6);
-INSERT INTO room_event (room_id, event_type, event_id) values (7, 1, 7);
-INSERT INTO room_event (room_id, event_type, event_id) values (8, 1, 8);
-INSERT INTO room_event (room_id, event_type, event_id) values (9, 1, 9);
+INSERT INTO room_event (room_id, event_type, event_id) values (1, 0, '1');
+INSERT INTO room_event (room_id, event_type, event_id) values (2, 0, '2');
+INSERT INTO room_event (room_id, event_type, event_id) values (3, 0, '3');
+INSERT INTO room_event (room_id, event_type, event_id) values (4, 0, '4');
+INSERT INTO room_event (room_id, event_type, event_id) values (5, 0, '5');
+INSERT INTO room_event (room_id, event_type, event_id) values (6, 0, '6');
+INSERT INTO room_event (room_id, event_type, event_id) values (7, 0, '7');
+INSERT INTO room_event (room_id, event_type, event_id) values (8, 0, '8');
+INSERT INTO room_event (room_id, event_type, event_id) values (9, 0, '9');
+-- Room events Phase 2
+INSERT INTO room_event (room_id, event_type, event_id) values (10, 1, 'change_score');
+INSERT INTO room_event (room_id, event_type, event_id) values (11, 1, 'stole_score');
+INSERT INTO room_event (room_id, event_type, event_id) values (12, 1, 'hide_event');
+INSERT INTO room_event (room_id, event_type, event_id) values (13, 1, 'back_to_lobby');
+INSERT INTO room_event (room_id, event_type, event_id) values (14, 1, 'add_steps');
+INSERT INTO room_event (room_id, event_type, event_id) values (15, 1, 'double_score');
+INSERT INTO room_event (room_id, event_type, event_id) values (16, 0, 6);
+INSERT INTO room_event (room_id, event_type, event_id) values (17, 0, 7);
+INSERT INTO room_event (room_id, event_type, event_id) values (18, 0, 8);
 -- Room link
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (0, 1, 100);
 INSERT INTO room_link (room_id_from, room_id_to, distance) values (1, 2, 0);
@@ -167,10 +177,10 @@ INSERT INTO score_map (rank, score) values (7, 1);
 INSERT INTO score_map (rank, score) values (8, 1);
 INSERT INTO score_map (rank, score) values (9, 1);
 -- action
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("change_score", "You have to select a team to exchange your score.", "Some team has exchanged your score.");
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("stole_score", "You can steal 3 point from other team.", "Some team has exchanged your score.");
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("hide_event", "You hide one of your room event.", "");
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("back_to_lobby", "You are transfered to the lobby.", "");
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("add_steps", "You increase your distance to every room in your rest game.", "");
-INSERT INTO actions (action_id, action_text_a, action_text_b) values ("double_score", "You double up your current score", "");
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('change_score', 'You have to select a team to exchange your score.', 'One team has exchanged your score.');
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('stole_score', 'You can steal 3 point from other team. \nPlease select a team.', 'One team has exchanged your score.');
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('hide_event', 'You hide one of your room event.', '');
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('back_to_lobby', 'You are transfered to the lobby.', '');
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('add_steps', 'You increase your distance to every room in your rest game.', '');
+INSERT INTO actions (action_id, action_text_a, action_text_b) values ('double_score', 'You double up your current score', '');
 

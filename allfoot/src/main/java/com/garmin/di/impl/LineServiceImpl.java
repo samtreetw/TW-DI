@@ -198,7 +198,7 @@ public class LineServiceImpl implements LineService {
                 break;
             case "test":
                 // Push message test
-                EventContent eventContent = gameDao.getRoom("1", 1).getRoomEvent().getEventContent();
+                EventContent eventContent = gameDao.gotoRoom("1", 1).getRoom().getRoomEvent().getEventContent();
                 question = eventContent.getEvent();
                 answers = new ArrayList<>();
                 for (int i = 0; i < eventContent.getEventOptions().size(); i++) {

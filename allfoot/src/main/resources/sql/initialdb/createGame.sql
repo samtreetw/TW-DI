@@ -61,6 +61,12 @@ CREATE TABLE IF NOT EXISTS actions (
   action_text_b  VARCHAR
 );
 
+CREATE TABLE IF NOT EXISTS player_action_queue (
+  player_esn	VARCHAR,
+  action_id		VARCHAR,
+  time_stamp	DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS score_map (
   rank		INT,
   score		INT

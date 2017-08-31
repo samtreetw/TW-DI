@@ -1,8 +1,14 @@
 package com.garmin.di.dao;
 
+import com.garmin.di.dao.util.RoomWrapper;
+import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Room;
+import com.garmin.di.dto.enums.ActionEvent;
+import com.garmin.di.dto.enums.EventType;
 import com.garmin.di.dto.enums.GameStatus;
+import com.sun.istack.NotNull;
+import com.sun.istack.Nullable;
 
 import java.util.List;
 
@@ -20,13 +26,20 @@ public interface GameDao {
 
     int getCurrentRoom(String esn);
 
-    boolean gotoRoom(String esn, int roomId);
-
-    Room getRoom(String esn, int roomId);
+    /**
+     * Get {@link Room} Object but without {@link EventContentImp}
+     * @param roomId
+     * @return
+     */
+    @Nullable Room getRoom(int roomId);
+    
+    boolean hasPlayerBeenTo(String esn, int roomId);
+    
+    RoomWrapper gotoRoom(String esn, int roomId);
     
     boolean passRoom(String esn, int roomId);
 
-    boolean updateGameStatus(GameStatus gameStatus);
+    boolean updateGameStatus(@NotNull GameStatus gameStatus);
 
     boolean addGameRecord(String esn, int roomId);
 
@@ -39,5 +52,9 @@ public interface GameDao {
     boolean lockPlayer(String esn);
     
     boolean unLockPlayer(String esn);
+    
+    boolean putActionQueue(String esn, @NotNull ActionEvent actionEvent);
+    
+    List<String> popActionQueue(String esn);
     
 }
