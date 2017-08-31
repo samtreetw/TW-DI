@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <appender name="FILE" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${catalina.base}/logs/allfoot.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+        </layout>
+    </appender>
+    <appender name="LineBot_LOG" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${catalina.base}/logs/allfoot_linebot.log"/>
+        <param name="Append" value="true"/>
+        <param name="Threshold" value="INFO"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+        </layout>
+    </appender>
+
+    <category name="org.apache.catalina">
+        <priority value="INFO"/>
+    </category>
+
+    <category name="org.springframework">
+        <priority value="ERROR"/>
+    </category>
+
+    <category name="com.garmin.di.util.LineBotUtils">
+        <priority value="INFO"/>
+        <appender-ref ref="LineBot_LOG"/>
+    </category>
+
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</log4j:configuration>
