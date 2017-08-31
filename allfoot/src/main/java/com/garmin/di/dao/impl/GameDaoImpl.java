@@ -244,7 +244,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 			}
 		}, lastRank);
 		// Update user score.
-		int score = playerDao.getPlayerScore(esn) + rankScore;
+		int score = playerDao.getPlayerScoreByEsn(esn) + rankScore;
 		return playerDao.updatePlayerScore(esn, score);
 	}
 

@@ -1,0 +1,1 @@
+SELECT score from player where line_id = ?;

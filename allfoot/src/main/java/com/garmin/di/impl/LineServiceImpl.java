@@ -140,29 +140,46 @@ public class LineServiceImpl implements LineService {
 
         String lineId = event.getSource().getUserId();
         for (Pair<String, String> item : arrayList) {
-            switch (item.getKey()) {
-                case "UserLineID":
-                    if (playerDao.updatePlayerLineId(item.getValue(), lineId)) {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
-                    } else {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
-                    }
-                    break;
-                case "PassRoom":
-                    int room = gameDao.getCurrentRoom(item.getValue());
-                    if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "has passed room " + room + "."));
-                    } else {
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Pass Room Fail."));
-                    }
-                    break;
-                default:
-                    Integer answer = gameDao.getAnswer(item.getKey());
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
-                    break;
-            }
+        	String key = item.getKey();
+        	com.garmin.di.dto.enums.ActionEvent actionEvent = com.garmin.di.dto.enums.ActionEvent.getByName(key);
+        	if (actionEvent != null) {
+        		handleActionEvent(actionEvent, item.getValue());
+        	} else {
+	            switch (key) {
+	                case "UserLineID":
+	                    if (playerDao.updatePlayerLineId(item.getValue(), lineId)) {
+	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
+	                    } else {
+	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
+	                    }
+	                    break;
+	                case "PassRoom":
+	                    int room = gameDao.getCurrentRoom(item.getValue());
+	                    if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
+	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "has passed room " + room + "."));
+	                    } else {
+	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Pass Room Fail."));
+	                    }
+	                    break;
+	                default:
+	                    Integer answer = gameDao.getAnswer(item.getKey());
+	                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
+	                    break;
+	            }
+        	}
         }
 
+    }
+    
+    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String esn) {
+    	switch (actionEvent) {
+		case CHANGE_SCORE:
+			
+			break;
+
+		default:
+			break;
+		}
     }
 
     private void handleBeaconEvent(BeaconEvent event) {

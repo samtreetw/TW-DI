@@ -42,8 +42,11 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_UPDATE_PLAYER_SCORE =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerScore.sql"));
     
-    private static final String SQL_GET_PLAYER_SCORE =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScore.sql"));
+    private static final String SQL_GET_PLAYER_SCORE_BY_ESN =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScoreByEsn.sql"));
+    
+    private static final String SQL_GET_PLAYER_SCORE_BY_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScoreByLineId.sql"));
     
     private static final String SQL_UPDATE_PLAYER_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerLineId.sql"));
@@ -129,8 +132,14 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
 	@Override
-	public int getPlayerScore(String esn) {
-		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE, new SingleColumnRowMapper<Integer>(), esn);
+	public int getPlayerScoreByEsn(String esn) {
+		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE_BY_ESN, new SingleColumnRowMapper<Integer>(), esn);
+        return query.isEmpty() ? 0 : query.get(0);
+	}
+	
+	@Override
+	public int getPlayerScoreByLineId(String lineId) {
+		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE_BY_LINE_ID, new SingleColumnRowMapper<Integer>(), lineId);
         return query.isEmpty() ? 0 : query.get(0);
 	}
 

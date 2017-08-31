@@ -25,7 +25,9 @@ public interface PlayerDao {
     
     int getPlayerLocation(String esn);
     
-    int getPlayerScore(String esn);
+    int getPlayerScoreByEsn(String esn);
+    
+    int getPlayerScoreByLineId(String lineId);
     
     PlayerStatus getPlayerStatus(String esn);
 
