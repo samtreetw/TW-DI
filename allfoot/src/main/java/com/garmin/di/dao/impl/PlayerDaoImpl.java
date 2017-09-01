@@ -32,34 +32,43 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 
     private static final String SQL_GET_ALL_PLAYER =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getAllPlayers.sql"));
-    
+
     private static final String SQL_UPDATE_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerStatus.sql"));
-    
+
     private static final String SQL_GET_PLAYER_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerStatus.sql"));
-    
+
     private static final String SQL_UPDATE_PLAYER_SCORE =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerScore.sql"));
-    
+
     private static final String SQL_GET_PLAYER_SCORE_BY_ESN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScoreByEsn.sql"));
-    
+
     private static final String SQL_GET_PLAYER_SCORE_BY_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerScoreByLineId.sql"));
-    
+
     private static final String SQL_UPDATE_PLAYER_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerLineId.sql"));
 
     private static final String SQL_GET_PLAYER_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerLineId.sql"));
-    
+
     private static final String SQL_UPDATE_PLAYER_LOCATION =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/updatePlayerLocation.sql"));
-    
+
     private static final String SQL_GET_PLAYER_LOCATION =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerLocation.sql"));
-    
+
+    private static final String SQL_SWITCH_PLAYERS_SCORES =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/switchPlayersScores.sql"));
+
+    private static final String SQL_DOUBLE_PLAYER_SCORE_BY_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/doublePlayerScoreByLineId.sql"));
+
+    private static final String SQL_STEAL_PLAYER_SCORE =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/stealPlayerScore.sql"));
+
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -81,7 +90,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
         }, esn);
         return players.isEmpty() ? null : players.get(0);
     }
-    
+
     @Override
     public List<Player> getAllPlayers() {
     	return getJdbcTemplate().query(SQL_GET_ALL_PLAYER,new RowMapper<Player>() {
@@ -95,7 +104,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
                 player.setLineId(rs.getString("line_id"));
                 player.setScore(rs.getInt("score"));
                 return player;
-			}		
+			}
     	});
     }
 
@@ -108,7 +117,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 	public boolean updatePlayerScore(String esn, int score) {
 		return getJdbcTemplate().update(SQL_UPDATE_PLAYER_SCORE, score, esn) > 0;
 	}
-    
+
 	@Override
     public int getPlayerLocation(String esn) {
     	 List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_LOCATION, new SingleColumnRowMapper<Integer>(), esn);
@@ -119,7 +128,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     public boolean updatePlayerLocation(String esn, int roomId) {
         return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LOCATION, roomId, esn) > 0;
     }
-	
+
 	@Override
     public boolean updatePlayerLineId(String esn, String lineId) {
         return getJdbcTemplate().update(SQL_UPDATE_PLAYER_LINE_ID, lineId, esn) > 0;
@@ -136,7 +145,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE_BY_ESN, new SingleColumnRowMapper<Integer>(), esn);
         return query.isEmpty() ? 0 : query.get(0);
 	}
-	
+
 	@Override
 	public int getPlayerScoreByLineId(String lineId) {
 		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_SCORE_BY_LINE_ID, new SingleColumnRowMapper<Integer>(), lineId);
@@ -148,5 +157,33 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 		List<Integer> query = getJdbcTemplate().query(SQL_GET_PLAYER_STATUS, new SingleColumnRowMapper<Integer>(), esn);
         return query.isEmpty() ? PlayerStatus.FREE : PlayerStatus.lookup(query.get(0));
 	}
-	
+
+    @Override
+    public boolean switchPlayersScores(String triggeringLineId, String victimEsn) {
+        boolean result = false;
+        Player victim = getPlayer(victimEsn);
+        if (!victim.getLineId().equals(triggeringLineId)) {
+            result = getJdbcTemplate().update(SQL_SWITCH_PLAYERS_SCORES,
+                    triggeringLineId, victimEsn, triggeringLineId, victimEsn) > 0;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean doublePlayerScoreByLineId(String lineId) {
+        return getJdbcTemplate().update(SQL_DOUBLE_PLAYER_SCORE_BY_LINE_ID, lineId) > 0;
+    }
+
+    @Override
+    public boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score) {
+        boolean result = false;
+        Player victim = getPlayer(victimEsn);
+        // To prevent from the case that stealer and victim are the same player.
+        if (!victim.getLineId().equals(stealerLineId)) {
+            result = getJdbcTemplate().update(SQL_STEAL_PLAYER_SCORE,
+                    stealerLineId, String.valueOf(score) ,victimEsn, String.valueOf(score), stealerLineId, victimEsn) > 0;
+        }
+        return result;
+    }
+
 }
