@@ -35,7 +35,10 @@ import java.util.concurrent.ThreadLocalRandom;
 @Path("/game-service")
 @Service
 public class GameServiceImpl implements GameService {
-
+	
+	final private static int INCREAMENTAL_STEPS = 200;
+	final private static int PHASE_ONE_STARTING_ROOM_ID = 0;
+	final private static int PHASE_TWO_STARTING_ROOM_ID = 10;
     private GameDao gameDao;
     private PlayerDao playerDao;
 
@@ -90,26 +93,33 @@ public class GameServiceImpl implements GameService {
 						gameDao.addRoomRecord(esn, randomRoomId);
 						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
 						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						gameDao.unLockPlayer(esn);
 						break;
 					}
 					case BACK_TO_LOBBY: {
 						int currentRoomId = playerDao.getPlayerLocation(esn);
 						Room currentRoom = gameDao.getRoom(currentRoomId);
 						if (currentRoom.getRoomPhase() == 2) {
-							this.gotoRoom(esn, 10);
+							this.gotoRoom(esn, PHASE_TWO_STARTING_ROOM_ID);
 						} else {
-							this.gotoRoom(esn, 0);
+							this.gotoRoom(esn, PHASE_ONE_STARTING_ROOM_ID);
 						}
+						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						gameDao.unLockPlayer(esn);
 						break;
 					}
 					case ADD_STEPS: {
-						int distanceIncrement = 0;
-						playerDao.increasePlayerExtraDistanceByEsn(esn, distanceIncrement);
+						playerDao.increasePlayerExtraDistanceByEsn(esn, INCREAMENTAL_STEPS);
+						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						gameDao.unLockPlayer(esn);
 					}
 					case DOUBLE_SCORE: {
 						playerDao.doublePlayerScoreByEsn(esn);
 						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
 						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						gameDao.unLockPlayer(esn);
 						break;
 					}
 					default:

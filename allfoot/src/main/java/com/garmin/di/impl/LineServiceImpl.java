@@ -184,10 +184,14 @@ public class LineServiceImpl implements LineService {
     	switch (actionEvent) {
 		case CHANGE_SCORE: {
 			playerDao.switchPlayersScores(lineId, esn);
+			TextMessage textMessage = LineBotUtils.genTextMessage("Exchange score done!");
+			LineBotUtils.sendPushMessage(lineId, textMessage);
 			break;
 		}
 		case STOLE_SCORE: {
 			playerDao.stealPlayerScore(lineId, esn, SCORE_TO_STEAL);
+			TextMessage textMessage = LineBotUtils.genTextMessage("Steal score done!");
+			LineBotUtils.sendPushMessage(lineId, textMessage);
 			break;
 		}
 		default:

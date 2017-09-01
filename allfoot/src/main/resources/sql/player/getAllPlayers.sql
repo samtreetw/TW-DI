@@ -1,1 +1,1 @@
-SELECT * FROM player;
+SELECT * FROM player ORDER BY esn;

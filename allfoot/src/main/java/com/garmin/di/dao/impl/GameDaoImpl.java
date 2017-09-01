@@ -18,6 +18,7 @@ import com.sun.istack.NotNull;
 import com.sun.istack.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
@@ -44,7 +45,9 @@ import java.util.List;
  */
 @Repository
 public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao {
-
+	
+	final Logger logger = Logger.getLogger(GameDaoImpl.class);
+	
     private static final String SQL_PLAYER_JOIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/playerJoin.sql"));
 
@@ -78,8 +81,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ANSWER =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAnswer.sql"));
 
-    private static final String SQL_GET_ROOM_LAST_RANK =
-    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomLastRank.sql"));
+    private static final String SQL_GET_ROOM_PLAYER_RANK =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomPlayerRank.sql"));
     
     private static final String SQL_GET_RANK_SCORE =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRankScore.sql"));
@@ -96,7 +99,6 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRandomRoomThatPlayerNeverBeenTo.sql"));
 
-    
     private PlayerDao playerDao;
     
     
@@ -135,21 +137,32 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     @Override
     public RoomWrapper gotoRoom(String esn, int roomId) {
     	
-    	lockPlayer(esn);
+    	if(!lockPlayer(esn)) {
+    		logger.error("User: " + esn + " lock player failed.");
+    		return null;
+    	}
         
-    	playerDao.updatePlayerLocation(esn, roomId);
+    	if (!playerDao.updatePlayerLocation(esn, roomId)) {
+    		logger.error("User: " + esn + " update user location failed");
+    		return null;
+    	}
         
     	Room room = getRoom(roomId);
     	
     	if (room == null) {
+    		logger.error("User:" + esn + " get Null for room");
     		return null;
     	}
     	
     	RoomWrapper roomWrapper = new RoomWrapper(room);
     	if (!hasPlayerBeenTo(esn, roomId)) {
-    		addRoomRecord(esn, roomId);
 	        roomWrapper.setEventWrapper(genEventWrapper(room.getRoomEvent().getEventType(), room.getRoomEvent().getEventId()));
         }
+    	
+    	if (!addRoomRecord(esn, roomId)) {
+    		logger.error("User:" + esn + " add room record failed");
+    		return null;
+    	}
         
         return roomWrapper;
     }
@@ -229,24 +242,19 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     
     @Override
 	public boolean passRoom(String esn, int roomId) {
-        if (roomId == -1) {
-            return false;
-        }
+        
+        addGameRecord(esn, roomId);
 
     	// Calculate score.
-    	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
-
-			@Override
-			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
-				int rank = 0;
-				while (rs.next()) {
-					rank = rs.getInt("rank");
-				}
-				return rank;
-			}
-			
-		}, roomId);
-		++lastRank;
+    	List<Integer> ranks = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+		
+    	if (ranks.isEmpty()) {
+    		logger.error("User:" + esn + " has added game record but get no rank from database");
+    		return false;
+    	}
+    	
+    	int userRank = ranks.get(0);
+    	
 		// Get score of rank.
 		int rankScore = getJdbcTemplate().query(SQL_GET_RANK_SCORE, new ResultSetExtractor<Integer>(){
 
@@ -258,10 +266,23 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 				}
 				return rankScore;
 			}
-		}, lastRank);
+		}, userRank);
+		
+		if (rankScore <= 0) {
+			logger.error("User:" + esn + " get no score for his/her rank from database");
+			return false;
+		}
+		
 		// Update user score.
 		int score = playerDao.getPlayerScoreByEsn(esn) + rankScore;
-		return playerDao.updatePlayerScore(esn, score);
+		boolean updateScoreStatus = playerDao.updatePlayerScore(esn, score);
+		
+		if (!updateScoreStatus) {
+			logger.error("User:" + esn + " update score failed check database");
+			return false;
+		}
+		
+		return true;
 	}
 
     @Override
