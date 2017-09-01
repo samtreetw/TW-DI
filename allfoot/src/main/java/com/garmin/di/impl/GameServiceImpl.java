@@ -3,13 +3,18 @@ package com.garmin.di.impl;
 import com.garmin.di.GameService;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
+import com.garmin.di.dao.util.RoomWrapper;
+import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
+import com.garmin.di.dto.enums.ActionEvent;
+import com.garmin.di.dto.enums.EventType;
 import com.garmin.di.dto.enums.PlayerStatus;
 import com.garmin.di.util.LineBotUtils;
+import com.linecorp.bot.model.message.Message;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,6 +26,7 @@ import javax.ws.rs.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created with IntelliJ IDEA.
@@ -59,20 +65,60 @@ public class GameServiceImpl implements GameService {
     @Override
     public boolean gotoRoom(String esn, Integer roomId) {
     	try {
-	        Room room = gameDao.gotoRoom(esn, roomId).getRoom(); 
+    		RoomWrapper roomWrapper = gameDao.gotoRoom(esn, roomId);
+	        Room room = roomWrapper.getRoom(); 
 	        RoomEvent roomEvent = room.getRoomEvent();
-	        EventContent eventContent = roomEvent.getEventContent();
-	        List<Pair<String, String>> answers = new ArrayList<>();
-	        int count = 1;
-	        for (String option: eventContent.getEventOptions()) {
-	        	answers.add(new ImmutablePair<>(option, Integer.toString(count)));
-	        	count++;
+	        EventType eventType = roomEvent.getEventType();
+	        if (eventType == EventType.QUESTION) {
+		        Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+		        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+	        } else {
+	        	ActionContent actionContent = (ActionContent) roomWrapper.getEventWrapper().getRawObject();
+	        	ActionEvent actionEvent = actionContent.getAction();
+	        	switch (actionEvent) {
+	        	case CHANGE_SCORE:
+	    		case STOLE_SCORE: {
+	    			Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+			        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+			        break;
+	    		}
+	    		case HIDE_EVENT: {
+	    			int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo(esn);
+	    			gameDao.addRoomRecord(esn, randomRoomId);
+	    			Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+	    			LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+	    			break;
+	    		}
+	    		case BACK_TO_LOBBY: {
+	    			
+	    		}
+	    		case ADD_STEPS: {
+	    			
+	    		}
+	    		case DOUBLE_SCORE: {
+	    			playerDao.doublePlayerScoreByEsn(esn);
+	    			Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+	    			LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+					break;
+	    		}
+				default:
+					break;
+				}
 	        }
-	        LineBotUtils.genQuestion("Here comes a question!", roomEvent.getEventId(), eventContent.getEvent(), answers);
 	        return true;
     	} catch (Exception e) {
     		return false;
 		}
+    }
+    
+    private Message genQuestionResponse(String eventId, EventContent eventContent) {
+        List<Pair<String, String>> answers = new ArrayList<>();
+        int count = 1;
+        for (String option: eventContent.getEventOptions()) {
+        	answers.add(new ImmutablePair<>(option, Integer.toString(count)));
+        	count++;
+        }
+        return LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers);
     }
 
 }

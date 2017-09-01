@@ -21,14 +21,20 @@ CREATE TABLE IF NOT EXISTS player (
   location          INT,
   previous_location INT,
   line_id           VARCHAR,
-  status            INT,
-  score             INT
+  status            INT default 0,
+  score				INT default 0,
+  extra_distance    INT default 0
+);
+
+CREATE TABLE IF NOT EXISTS room_rank (
+  room_id    INT,
+  player_esn VARCHAR,
+  rank       INT
 );
 
 CREATE TABLE IF NOT EXISTS room_record (
   room_id    INT,
-  player_esn VARCHAR,
-  rank       INT
+  player_esn VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS room_event (

@@ -1,3 +1,3 @@
 UPDATE player
 SET status = ?
-WHERE esn = ?
+WHERE esn = ?;

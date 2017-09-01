@@ -1,0 +1,1 @@
+SELECT esn FROM player WHERE line_id = ?;

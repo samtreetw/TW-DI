@@ -12,10 +12,10 @@ import com.garmin.di.util.LineBotUtils;
 import com.linecorp.bot.client.LineSignatureValidator;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.event.*;
 import com.linecorp.bot.model.event.message.*;
 import com.linecorp.bot.model.message.Message;
+import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -178,21 +178,25 @@ public class LineServiceImpl implements LineService {
 
     }
 
-    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn) {
-        switch (actionEvent) {
-            case CHANGE_SCORE:
-                playerDao.switchPlayersScores(lineId, esn);
-                break;
-            case STOLE_SCORE:
-                // todo If we want a random number here?
-                playerDao.stealPlayerScore(lineId, esn, 3);
-                break;
-            case DOUBLE_SCORE:
-                playerDao.doublePlayerScoreByLineId(lineId);
-                break;
-            default:
-                break;
-        }
+    final private static int SCORE_TO_STEAL = 3;
+    
+    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent,String lineId, String esn) {
+    	switch (actionEvent) {
+		case CHANGE_SCORE: {
+			playerDao.switchPlayersScores(lineId, esn);
+			break;
+		}
+		case STOLE_SCORE: {
+			playerDao.stealPlayerScore(lineId, esn, SCORE_TO_STEAL);
+			break;
+		}
+		default:
+			return;
+		}
+    	ActionContent actionContent = gameDao.getAction(actionEvent.getName());
+		TextMessage textMessage = LineBotUtils.genTextMessage(actionContent.getNotificationTextB());
+		LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), textMessage);
+		gameDao.unLockPlayer(playerDao.getPlayerEsnByLineId(lineId));
     }
 
     private void handleBeaconEvent(BeaconEvent event) {

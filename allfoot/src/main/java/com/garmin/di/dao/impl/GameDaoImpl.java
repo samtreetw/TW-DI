@@ -57,8 +57,11 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_INSERT_ROOM_RECORD =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomRecord.sql"));
     
-    private static final String SQL_GET_ROOM_PLAYER_RANK =
-            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomPlayerRank.sql"));
+    private static final String SQL_INSERT_ROOM_RANK =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomRank.sql"));
+    
+    private static final String SQL_GET_ROOM_PLAYER_RECORD_COUNT =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomPlayerRecordCount.sql"));
 
     private static final String SQL_UPDATE_GAME_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
@@ -69,8 +72,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_CHECK_IS_ADMIN =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/checkIsAdmin.sql"));
     
-    private static final String SQL_GET_ROOM_QUESTION =
-    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomQuestion.sql"));
+    private static final String SQL_GET_QUESTION =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getQuestion.sql"));
     
     private static final String SQL_GET_ANSWER =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAnswer.sql"));
@@ -87,8 +90,11 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_PUT_ACTION_QUEUE =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertActionQueue.sql"));
     
-    private static final String SQL_GET_ROOM_ACTION =
-    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomAction.sql"));
+    private static final String SQL_GET_ACTION =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAction.sql"));
+    
+    private static final String SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRanmdomRoomThatPlayerNeverBennTo.sql"));
     
     private PlayerDao playerDao;
     
@@ -140,51 +146,62 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     	
     	RoomWrapper roomWrapper = new RoomWrapper(room);
     	if (!hasPlayerBeenTo(esn, roomId)) {
+    		addRoomRecord(esn, roomId);
 	        roomWrapper.setEventWrapper(genEventWrapper(room.getRoomEvent().getEventType(), room.getRoomEvent().getEventId()));
         }
         
         return roomWrapper;
     }
-
-
+    
     private EventWrapper genEventWrapper(final EventType eventType, final String eventId) {
-        if (eventType == EventType.QUESTION) {
-            EventContentImp questionContent = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContentImp>() {
-
-                @Override
-                public EventContentImp extractData(ResultSet resultSet) throws SQLException, DataAccessException {
-                    EventContentImp questionContent = new EventContentImp();
-                    ArrayList<String> list = new ArrayList<String>();
-                    while (resultSet.next()) {
-                        if (StringUtils.isEmpty(questionContent.getEvent())) {
-                            questionContent.setEvent(resultSet.getString("question_text"));
-                        }
-                        list.add(resultSet.getString("options_text"));
-                    }
-                    questionContent.setEventOptions(list);
-                    return questionContent;
-                }
-
-            }, eventId);
-            return new EventWrapper<EventContentImp>(questionContent);
-        } else {
-            List<ActionContent> actionContents = getJdbcTemplate().query(SQL_GET_ROOM_ACTION, new RowMapper<ActionContent>() {
-
-                @Override
-                public ActionContent mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    ActionContent actionContent = new ActionContent(playerDao, ActionEvent.getByName(eventId), rs.getString("action_text_a"), rs.getString("action_text_b"));
-                    return actionContent;
-                }
-            }, eventId);
-            return new EventWrapper<ActionContent>(actionContents.get(0));
-        }
+    	if (eventType == EventType.QUESTION) {
+    		EventContentImp questionContent = getQuestion(eventId);
+    		return new EventWrapper<EventContentImp>(questionContent);
+    	} else {
+    		ActionContent actionContent = getAction(eventId);
+    		return new EventWrapper<ActionContent>(actionContent);
+    	}
     }
     
     @Override
+	public EventContentImp getQuestion(String eventId) {
+    	EventContentImp questionContent = getJdbcTemplate().query(SQL_GET_QUESTION, new ResultSetExtractor<EventContentImp>() {
+    		
+			@Override
+			public EventContentImp extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+				EventContentImp questionContent = new EventContentImp();
+				ArrayList<String> list = new ArrayList<String>();
+				while(resultSet.next()) {
+					if (StringUtils.isEmpty(questionContent.getEvent())) {
+						questionContent.setEvent(resultSet.getString("question_text"));
+					}
+					list.add(resultSet.getString("options_text"));
+				}
+				questionContent.setEventOptions(list);
+				return questionContent;
+			}
+			
+		}, eventId);
+		return questionContent;
+	}
+
+	@Override
+	public ActionContent getAction(final String eventId) {
+		List<ActionContent> actionContents = getJdbcTemplate().query(SQL_GET_ACTION, new RowMapper<ActionContent>() {
+
+			@Override
+			public ActionContent mapRow(ResultSet rs, int rowNum) throws SQLException {
+				ActionContent actionContent = new ActionContent(playerDao, ActionEvent.getByName(eventId), rs.getString("action_text_a"), rs.getString("action_text_b"));
+				return actionContent;
+			}
+		}, eventId);
+		return actionContents.get(0);
+	}
+
+	@Override
     public boolean hasPlayerBeenTo(String esn, int roomId) {
-    	// Check user room record. No event for the user who already been here before.
-        List<Integer> records = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
-        return records.size() != 0; 
+        List<Integer> records = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RECORD_COUNT, new SingleColumnRowMapper<Integer>(), roomId, esn);
+        return records.size() != 0 && records.get(0) > 0; 
     }
 
     @Nullable
@@ -213,7 +230,6 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         if (roomId == -1) {
             return false;
         }
-    	//TODO checkQueue.
 
     	// Calculate score.
     	int lastRank = getJdbcTemplate().query(SQL_GET_ROOM_LAST_RANK, new ResultSetExtractor<Integer>(){
@@ -256,10 +272,15 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("room_id", roomId);
         source.addValue("esn", esn);
-        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_RECORD, source) > 0;
+        return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_RANK, source) > 0;
     }
-
+    
     @Override
+	public boolean addRoomRecord(String esn, int roomId) {
+    	return getJdbcTemplate().update(SQL_INSERT_ROOM_RECORD, esn, roomId) > 0;
+	}
+
+	@Override
     public boolean addAdmin(String name, String lineId) {
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("name", name);
@@ -311,6 +332,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 			
 		}, esn);
 		return actions;
+	}
+
+	@Override
+	public int getOneRandomRoomsThatPlayerNeverBeenTo(String esn) {
+		List<Integer> rooms = getJdbcTemplate().query(SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO, new SingleColumnRowMapper<Integer>(), esn);
+		return rooms.isEmpty() ? -1 : rooms.get(0);
 	}
     
 }

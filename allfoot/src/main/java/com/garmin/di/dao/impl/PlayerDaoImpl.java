@@ -4,6 +4,7 @@ import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dao.util.ResourceUtil;
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.enums.PlayerStatus;
+import com.sun.istack.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,14 +64,20 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_SWITCH_PLAYERS_SCORES =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/switchPlayersScores.sql"));
 
-    private static final String SQL_DOUBLE_PLAYER_SCORE_BY_LINE_ID =
-            ResourceUtil.readFileContents(new ClassPathResource("sql/player/doublePlayerScoreByLineId.sql"));
+    private static final String SQL_DOUBLE_PLAYER_SCORE_BY_ESN =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/doublePlayerScoreByEsn.sql"));
 
     private static final String SQL_STEAL_PLAYER_SCORE =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/stealPlayerScore.sql"));
+    
+    private static final String SQL_GET_PLAYER_ESN_BY_LINE_ID =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/getPlayerEsnByLineId.sql"));
 
     private static final String SQL_GET_ALL_PLAYER_SCORES =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getAllPlayerScores.sql"));
+    
+    private static final String SQL_GET_PLAYER_COUNT =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/getPlayerCount.sql"));
 
     private RowMapper<Player> playerRowMapper = new RowMapper<Player>() {
         @Override
@@ -84,7 +91,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
             return player;
         }
     };
-
+    
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -99,6 +106,13 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     @Override
     public List<Player> getAllPlayers() {
     	return getJdbcTemplate().query(SQL_GET_ALL_PLAYER, playerRowMapper);
+    }
+    
+    @Nullable
+    @Override
+    public String getPlayerEsnByLineId(String lineId) {
+    	List<String> lineIds = getJdbcTemplate().query(SQL_GET_PLAYER_ESN_BY_LINE_ID, new SingleColumnRowMapper<String>());
+    	return lineIds.isEmpty() ? null : lineIds.get(0);
     }
 
     @Override
@@ -163,8 +177,8 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
     @Override
-    public boolean doublePlayerScoreByLineId(String lineId) {
-        return getJdbcTemplate().update(SQL_DOUBLE_PLAYER_SCORE_BY_LINE_ID, lineId) > 0;
+    public boolean doublePlayerScoreByEsn(String esn) {
+        return getJdbcTemplate().update(SQL_DOUBLE_PLAYER_SCORE_BY_ESN, esn) > 0;
     }
 
     @Override
@@ -188,4 +202,13 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
             }
         });
     }
+    
+	@Override
+	public int getPlayerCounts() {
+		List<Integer> counts = getJdbcTemplate().query(SQL_GET_PLAYER_COUNT, new SingleColumnRowMapper<Integer>());
+		return counts.isEmpty() ? 0 : counts.get(0);
+	}
+
+    
+    
 }

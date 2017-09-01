@@ -1,6 +1,8 @@
 package com.garmin.di.dao;
 
 import com.garmin.di.dao.util.RoomWrapper;
+import com.garmin.di.dto.ActionContent;
+import com.garmin.di.dto.EventContentImp;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.enums.ActionEvent;
@@ -33,6 +35,8 @@ public interface GameDao {
     
     boolean hasPlayerBeenTo(String esn, int roomId);
     
+    int getOneRandomRoomsThatPlayerNeverBeenTo(String esn);
+    
     RoomWrapper gotoRoom(String esn, int roomId);
     
     boolean passRoom(String esn, int roomId);
@@ -40,6 +44,8 @@ public interface GameDao {
     boolean updateGameStatus(@NotNull GameStatus gameStatus);
 
     boolean addGameRecord(String esn, int roomId);
+    
+    boolean addRoomRecord(String esn, int roomId);
 
     boolean addAdmin(String name, String lineId);
 
@@ -54,5 +60,9 @@ public interface GameDao {
     boolean putActionQueue(String esn, @NotNull ActionEvent actionEvent);
     
     List<String> popActionQueue(String esn);
+    
+    EventContentImp getQuestion(String eventId);
+    
+    ActionContent getAction(String eventId);
     
 }
