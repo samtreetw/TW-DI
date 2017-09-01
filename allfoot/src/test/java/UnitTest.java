@@ -27,6 +27,6 @@ public class UnitTest {
     public void test() {
         Player playerOne = playerDao.getPlayer("1");
         System.out.println(playerOne);
-
+        System.out.println(playerOne);
     }
 }
