@@ -50,11 +50,11 @@ public interface PlayerDao {
      */
     boolean updatePlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
 
-    public boolean switchPlayersScoresByLineId(String triggeringLineId, String victimEsn);
+    public boolean switchPlayersScores(String triggeringLineId, String victimEsn);
 
     public boolean doublePlayerScoreByLineId(String lineId);
 
-    public boolean stealPlayerScoreByLineId(String stealerLineId, String victimEsn, Integer score);
+    public boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score);
     
     
     

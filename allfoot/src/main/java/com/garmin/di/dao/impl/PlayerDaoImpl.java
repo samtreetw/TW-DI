@@ -60,14 +60,14 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_GET_PLAYER_LOCATION =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getPlayerLocation.sql"));
 
-    private static final String SQL_SWITCH_PLAYERS_SCORES_BY_LINE_ID =
-            ResourceUtil.readFileContents(new ClassPathResource("sql/player/switchPlayersScoresByLineId.sql"));
+    private static final String SQL_SWITCH_PLAYERS_SCORES =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/switchPlayersScores.sql"));
 
     private static final String SQL_DOUBLE_PLAYER_SCORE_BY_LINE_ID =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/doublePlayerScoreByLineId.sql"));
 
-    private static final String SQL_STEAL_PLAYER_SCORE_BY_LINE_ID =
-            ResourceUtil.readFileContents(new ClassPathResource("sql/player/stealPlayerScoreByLineId.sql"));
+    private static final String SQL_STEAL_PLAYER_SCORE =
+            ResourceUtil.readFileContents(new ClassPathResource("sql/player/stealPlayerScore.sql"));
 
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
@@ -159,11 +159,11 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 	}
 
     @Override
-    public boolean switchPlayersScoresByLineId(String triggeringLineId, String victimEsn) {
+    public boolean switchPlayersScores(String triggeringLineId, String victimEsn) {
         boolean result = false;
         Player victim = getPlayer(victimEsn);
         if (!victim.getLineId().equals(triggeringLineId)) {
-            result = getJdbcTemplate().update(SQL_SWITCH_PLAYERS_SCORES_BY_LINE_ID,
+            result = getJdbcTemplate().update(SQL_SWITCH_PLAYERS_SCORES,
                     triggeringLineId, victimEsn, triggeringLineId, victimEsn) > 0;
         }
         return result;
@@ -175,12 +175,12 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     }
 
     @Override
-    public boolean stealPlayerScoreByLineId(String stealerLineId, String victimEsn, Integer score) {
+    public boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score) {
         boolean result = false;
         Player victim = getPlayer(victimEsn);
         // To prevent from the case that stealer and victim are the same player.
         if (!victim.getLineId().equals(stealerLineId)) {
-            result = getJdbcTemplate().update(SQL_STEAL_PLAYER_SCORE_BY_LINE_ID,
+            result = getJdbcTemplate().update(SQL_STEAL_PLAYER_SCORE,
                     stealerLineId, String.valueOf(score) ,victimEsn, String.valueOf(score), stealerLineId, victimEsn) > 0;
         }
         return result;
