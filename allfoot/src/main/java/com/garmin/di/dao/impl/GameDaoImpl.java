@@ -6,10 +6,8 @@ import com.garmin.di.dao.util.EventWrapper;
 import com.garmin.di.dao.util.ResourceUtil;
 import com.garmin.di.dao.util.RoomWrapper;
 import com.garmin.di.dto.ActionContent;
-import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.EventContentImp;
 import com.garmin.di.dto.LinkedRoom;
-import com.garmin.di.dto.Player;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
 import com.garmin.di.dto.enums.ActionEvent;
@@ -147,39 +145,39 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         
         return roomWrapper;
     }
-    
-    
-    private EventWrapper genEventWrapper(final EventType eventType, final String eventId) {
-    	if (eventType == EventType.QUESTION) {
-    		EventContentImp questionContent = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContentImp>() {
-	
-				@Override
-				public EventContentImp extractData(ResultSet resultSet) throws SQLException, DataAccessException {
-					EventContentImp questionContent = new EventContentImp();
-					ArrayList<String> list = new ArrayList<String>();
-					while(resultSet.next()) {
-						if (StringUtils.isEmpty(questionContent.getEvent())) {
-							questionContent.setEvent(resultSet.getString("question_text"));
-						}
-						list.add(resultSet.getString("options_text"));
-					}
-					questionContent.setEventOptions(list);
-					return questionContent;
-				}
-				
-			}, eventId);
-    		return new EventWrapper<EventContentImp>(questionContent);
-    	} else {
-    		List<ActionContent> actionContents = getJdbcTemplate().query(SQL_GET_ROOM_ACTION, new RowMapper<ActionContent>() {
 
-				@Override
-				public ActionContent mapRow(ResultSet rs, int rowNum) throws SQLException {
-					ActionContent actionContent = new ActionContent(playerDao, ActionEvent.getByName(eventId), rs.getString("action_text_a"), rs.getString("action_text_b"));
-					return actionContent;
-				}
-    		}, eventId);
-    		return new EventWrapper<ActionContent>(actionContents.get(0));
-    	}
+
+    private EventWrapper genEventWrapper(final EventType eventType, final String eventId) {
+        if (eventType == EventType.QUESTION) {
+            EventContentImp questionContent = getJdbcTemplate().query(SQL_GET_ROOM_QUESTION, new ResultSetExtractor<EventContentImp>() {
+
+                @Override
+                public EventContentImp extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+                    EventContentImp questionContent = new EventContentImp();
+                    ArrayList<String> list = new ArrayList<String>();
+                    while (resultSet.next()) {
+                        if (StringUtils.isEmpty(questionContent.getEvent())) {
+                            questionContent.setEvent(resultSet.getString("question_text"));
+                        }
+                        list.add(resultSet.getString("options_text"));
+                    }
+                    questionContent.setEventOptions(list);
+                    return questionContent;
+                }
+
+            }, eventId);
+            return new EventWrapper<EventContentImp>(questionContent);
+        } else {
+            List<ActionContent> actionContents = getJdbcTemplate().query(SQL_GET_ROOM_ACTION, new RowMapper<ActionContent>() {
+
+                @Override
+                public ActionContent mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ActionContent actionContent = new ActionContent(playerDao, ActionEvent.getByName(eventId), rs.getString("action_text_a"), rs.getString("action_text_b"));
+                    return actionContent;
+                }
+            }, eventId);
+            return new EventWrapper<ActionContent>(actionContents.get(0));
+        }
     }
     
     @Override

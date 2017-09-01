@@ -69,6 +69,22 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_STEAL_PLAYER_SCORE =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/stealPlayerScore.sql"));
 
+    private static final String SQL_GET_ALL_PLAYER_SCORES =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getAllPlayerScores.sql"));
+
+    private RowMapper<Player> playerRowMapper = new RowMapper<Player>() {
+        @Override
+        public Player mapRow(ResultSet rs, int i) throws SQLException {
+            Player player = new Player();
+            player.setCurrentRoomId(rs.getInt("location"));
+            player.setPreviousRoomId(rs.getInt("previous_location"));
+            player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
+            player.setLineId(rs.getString("line_id"));
+            player.setScore(rs.getInt("score"));
+            return player;
+        }
+    };
+
     @Autowired
     public PlayerDaoImpl(@Qualifier("dataSource") DataSource dataSource) {
         super.setDataSource(dataSource);
@@ -76,36 +92,13 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 
     @Override
     public Player getPlayer(String esn) {
-        List<Player> players = getJdbcTemplate().query(SQL_GET_PLAYER, new RowMapper<Player>() {
-            @Override
-            public Player mapRow(ResultSet rs, int i) throws SQLException {
-                Player player = new Player();
-                player.setCurrentRoomId(rs.getInt("location"));
-                player.setPreviousRoomId(rs.getInt("previous_location"));
-                player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
-                player.setLineId(rs.getString("line_id"));
-                player.setScore(rs.getInt("score"));
-                return player;
-            }
-        }, esn);
+        List<Player> players = getJdbcTemplate().query(SQL_GET_PLAYER, playerRowMapper, esn);
         return players.isEmpty() ? null : players.get(0);
     }
 
     @Override
     public List<Player> getAllPlayers() {
-    	return getJdbcTemplate().query(SQL_GET_ALL_PLAYER,new RowMapper<Player>() {
-
-			@Override
-			public Player mapRow(ResultSet rs, int rowNum) throws SQLException {
-				Player player = new Player();
-                player.setCurrentRoomId(rs.getInt("location"));
-                player.setPreviousRoomId(rs.getInt("previous_location"));
-                player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
-                player.setLineId(rs.getString("line_id"));
-                player.setScore(rs.getInt("score"));
-                return player;
-			}
-    	});
+    	return getJdbcTemplate().query(SQL_GET_ALL_PLAYER, playerRowMapper);
     }
 
     @Override
@@ -186,4 +179,13 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
         return result;
     }
 
+    @Override
+    public List<String> getAllPlayerScores() {
+        return getJdbcTemplate().query(SQL_GET_ALL_PLAYER_SCORES, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet rs, int i) throws SQLException {
+                return String.valueOf(rs.getInt("esn")) + ":" + String.valueOf(rs.getInt("score"));
+            }
+        });
+    }
 }

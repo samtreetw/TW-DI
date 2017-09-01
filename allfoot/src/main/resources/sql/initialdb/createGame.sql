@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS room_link (
   distance     INT
 );
 
-
 --status 0:unlock 1:lock
 CREATE TABLE IF NOT EXISTS player (
   esn               VARCHAR,
@@ -23,7 +22,7 @@ CREATE TABLE IF NOT EXISTS player (
   previous_location INT,
   line_id           VARCHAR,
   status            INT,
-  score				      INT
+  score             INT
 );
 
 CREATE TABLE IF NOT EXISTS room_record (
@@ -33,9 +32,9 @@ CREATE TABLE IF NOT EXISTS room_record (
 );
 
 CREATE TABLE IF NOT EXISTS room_event (
-  room_id		  INT,
-  event_type 	INT,
-  event_id		VARCHAR
+  room_id    INT,
+  event_type INT,
+  event_id   VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS admin_user (
@@ -56,18 +55,18 @@ CREATE TABLE IF NOT EXISTS options (
 );
 
 CREATE TABLE IF NOT EXISTS actions (
-  action_id      VARCHAR,
-  action_text_a	 VARCHAR,
-  action_text_b  VARCHAR
+  action_id     VARCHAR,
+  action_text_a VARCHAR,
+  action_text_b VARCHAR
 );
 
 CREATE TABLE IF NOT EXISTS player_action_queue (
-  player_esn	VARCHAR,
-  action_id		VARCHAR,
-  time_stamp	DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+  player_esn VARCHAR,
+  action_id  VARCHAR,
+  time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS score_map (
-  rank		INT,
-  score		INT
+  rank  INT,
+  score INT
 );

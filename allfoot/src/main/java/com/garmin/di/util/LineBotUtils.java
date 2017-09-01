@@ -67,6 +67,7 @@ public class LineBotUtils {
     /**
      * Generate {@link StickerMessage} for line-bot usage.
      * Available Stickers https://devdocs.line.me/files/sticker_list.pdf
+     *
      * @param packageId
      * @param stickerId
      * @return {@link StickerMessage}
@@ -116,7 +117,7 @@ public class LineBotUtils {
      * @param baseUrl
      * @param altText
      * @param baseSize {@link ImagemapBaseSize}
-     * @param actions {@link List<ImagemapAction>}
+     * @param actions  {@link List<ImagemapAction>}
      * @return {@link ImagemapMessage}
      */
     public static ImagemapMessage genImagemapMessage(String baseUrl, String altText, ImagemapBaseSize baseSize, List<ImagemapAction> actions) {
@@ -185,8 +186,8 @@ public class LineBotUtils {
      * Generate {@link TemplateMessage} a question for allfoot question.
      *
      * @param questionId Question ID.
-     * @param question Question text.
-     * @param answers A list of answer options. An answer should be (Answer text, Answer value).
+     * @param question   Question text.
+     * @param answers    A list of answer options. An answer should be (Answer text, Answer value).
      * @return {@link TemplateMessage}
      */
     public static TemplateMessage genQuestion(String altText, String questionId, String question, List<Pair<String, String>> answers) {
@@ -206,7 +207,7 @@ public class LineBotUtils {
     /**
      * Send {@link ReplyMessage} to reply a user's MessageEvent.
      *
-     * @param event {@link MessageEvent} Incoming message from a specific user.
+     * @param event   {@link MessageEvent} Incoming message from a specific user.
      * @param message {@link Message} Message to be sent for this reply message.
      */
     public static void sendReplyMessage(ReplyEvent event, Message message) {
@@ -228,7 +229,7 @@ public class LineBotUtils {
     /**
      * Send a {@link Message} to a user with {@link PushMessage}.
      *
-     * @param to {@link String} User ID for sending this multicast.
+     * @param to      {@link String} User ID for sending this multicast.
      * @param message {@link Message} Message to be sent for this push message.
      */
     public static void sendPushMessage(String to, Message message) {
@@ -236,11 +237,11 @@ public class LineBotUtils {
         Response<BotApiResponse> response;
         try {
             response =
-            LineMessagingServiceBuilder
-                    .create(LineBotProperties.getChannelToken())
-                    .build()
-                    .pushMessage(pushMessage)
-                    .execute();
+                    LineMessagingServiceBuilder
+                            .create(LineBotProperties.getChannelToken())
+                            .build()
+                            .pushMessage(pushMessage)
+                            .execute();
             logger.info(response.code() + " " + response.message());
         } catch (Exception e) {
             e.printStackTrace();
@@ -251,7 +252,7 @@ public class LineBotUtils {
     /**
      * Send a {@link Message} to a set of users with {@link Multicast}.
      *
-     * @param to {@link Set<String>} User IDs for sending this multicast.
+     * @param to      {@link Set<String>} User IDs for sending this multicast.
      * @param message {@link Message} Message to be sent for this multicast.
      */
     public static void sendMulticast(Set<String> to, Message message) {
@@ -274,7 +275,7 @@ public class LineBotUtils {
     public static void sendPlayerChoiceOptions(MessageEvent event, String question, String questionId) {
         ArrayList<Pair<String, String>> answers = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
-            answers.add(new ImmutablePair<>("Player " + String.valueOf(i+1), String.valueOf(i+1)));
+            answers.add(new ImmutablePair<>("Player " + String.valueOf(i + 1), String.valueOf(i + 1)));
         }
         LineBotUtils.sendReplyMessage(event, LineBotUtils.genQuestion("Here comes a question.", questionId, question, answers.subList(0, 4)));
         LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", questionId, question, answers.subList(4, 8)));

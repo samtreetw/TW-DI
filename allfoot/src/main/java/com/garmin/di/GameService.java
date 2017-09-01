@@ -1,7 +1,6 @@
 package com.garmin.di;
 
 import com.garmin.di.dto.LinkedRoom;
-import com.garmin.di.dto.Room;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;

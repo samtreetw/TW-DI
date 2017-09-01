@@ -45,18 +45,17 @@ public interface PlayerDao {
     /**
      * 
      * @param esn
-     * @param playerStatusId 0:unlock 1:lock
+     * @param playerStatus 0:unlock 1:lock
      * @return
      */
     boolean updatePlayerStatus(String esn, @NotNull PlayerStatus playerStatus);
 
-    public boolean switchPlayersScores(String triggeringLineId, String victimEsn);
+    boolean switchPlayersScores(String triggeringLineId, String victimEsn);
 
-    public boolean doublePlayerScoreByLineId(String lineId);
+    boolean doublePlayerScoreByLineId(String lineId);
 
-    public boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score);
-    
-    
-    
-    
+    boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score);
+
+
+    List<String> getAllPlayerScores();
 }

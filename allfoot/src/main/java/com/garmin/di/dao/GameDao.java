@@ -1,11 +1,9 @@
 package com.garmin.di.dao;
 
 import com.garmin.di.dao.util.RoomWrapper;
-import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.LinkedRoom;
 import com.garmin.di.dto.Room;
 import com.garmin.di.dto.enums.ActionEvent;
-import com.garmin.di.dto.enums.EventType;
 import com.garmin.di.dto.enums.GameStatus;
 import com.sun.istack.NotNull;
 import com.sun.istack.Nullable;
@@ -27,7 +25,7 @@ public interface GameDao {
     int getCurrentRoom(String esn);
 
     /**
-     * Get {@link Room} Object but without {@link EventContentImp}
+     * Get {@link Room} Object but without {@link com.garmin.di.dto.EventContentImp}
      * @param roomId
      * @return
      */

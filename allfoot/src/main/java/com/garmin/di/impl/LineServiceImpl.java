@@ -3,14 +3,19 @@ package com.garmin.di.impl;
 import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
+import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
+import com.garmin.di.dto.EventContentImp;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
 import com.linecorp.bot.client.LineSignatureValidator;
+import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.PostbackAction;
 import com.linecorp.bot.model.event.*;
-import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.message.*;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -27,6 +32,8 @@ import javax.ws.rs.core.Context;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created with IntelliJ IDEA.
@@ -140,46 +147,52 @@ public class LineServiceImpl implements LineService {
 
         String lineId = event.getSource().getUserId();
         for (Pair<String, String> item : arrayList) {
-        	String key = item.getKey();
-        	com.garmin.di.dto.enums.ActionEvent actionEvent = com.garmin.di.dto.enums.ActionEvent.getByName(key);
-        	if (actionEvent != null) {
-        		handleActionEvent(actionEvent, item.getValue());
-        	} else {
-	            switch (key) {
-	                case "UserLineID":
-	                    if (playerDao.updatePlayerLineId(item.getValue(), lineId)) {
-	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
-	                    } else {
-	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
-	                    }
-	                    break;
-	                case "PassRoom":
-	                    int room = gameDao.getCurrentRoom(item.getValue());
-	                    if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
-	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "has passed room " + room + "."));
-	                    } else {
-	                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Pass Room Fail."));
-	                    }
-	                    break;
-	                default:
-	                    Integer answer = gameDao.getAnswer(item.getKey());
-	                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Integer.valueOf(item.getValue()) == answer ? "Correct" : "Wrong"));
-	                    break;
-	            }
-        	}
+            String key = item.getKey();
+            com.garmin.di.dto.enums.ActionEvent actionEvent = com.garmin.di.dto.enums.ActionEvent.getByName(key);
+            if (actionEvent != null) {
+                handleActionEvent(actionEvent, lineId, item.getValue());
+            } else {
+                switch (key) {
+                    case "UserLineID":
+                        if (playerDao.updatePlayerLineId(item.getValue(), lineId)) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + "'s Line ID is updated."));
+                        } else {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to update player " + item.getValue() + "'sLine ID."));
+                        }
+                        break;
+                    case "PassRoom":
+                        int room = gameDao.getCurrentRoom(item.getValue());
+                        if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + " has passed room " + room + "."));
+                        } else {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Pass Room Fail."));
+                        }
+                        break;
+                    default:
+                        Integer answer = gameDao.getAnswer(item.getKey());
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Objects.equals(Integer.valueOf(item.getValue()), answer) ? "Correct" : "Wrong"));
+                        break;
+                }
+            }
         }
 
     }
-    
-    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String esn) {
-    	switch (actionEvent) {
-		case CHANGE_SCORE:
-			
-			break;
 
-		default:
-			break;
-		}
+    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn) {
+        switch (actionEvent) {
+            case CHANGE_SCORE:
+                playerDao.switchPlayersScores(lineId, esn);
+                break;
+            case STOLE_SCORE:
+                // todo If we want a random number here?
+                playerDao.stealPlayerScore(lineId, esn, 3);
+                break;
+            case DOUBLE_SCORE:
+                playerDao.doublePlayerScoreByLineId(lineId);
+                break;
+            default:
+                break;
+        }
     }
 
     private void handleBeaconEvent(BeaconEvent event) {
@@ -215,18 +228,25 @@ public class LineServiceImpl implements LineService {
                 break;
             case "test":
                 // Push message test
-                EventContent eventContent = gameDao.gotoRoom("1", 1).getRoom().getRoomEvent().getEventContent();
+                EventContent eventContent = gameDao.gotoRoom("1", 15).getEventWrapper().getRawObject();
                 question = eventContent.getEvent();
                 answers = new ArrayList<>();
-                for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
-                    answers.add(new ImmutablePair<>(eventContent.getEventOptions().get(i), String.valueOf(i+1)));
+                final Message message;
+                if (eventContent instanceof EventContentImp) {
+                    for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
+                        answers.add(new ImmutablePair<>(eventContent.getEventOptions().get(i), String.valueOf(i + 1)));
+                    }
+                    message = LineBotUtils.genQuestion("Here comes a question.", "1", question, answers);
+                } else {
+                    List<Action> actions = new ArrayList<>();
+                    actions.add(new MessageAction("OK", ((ActionContent) eventContent).getAction().getName()));
+                    actions.add(new MessageAction("Cancel", "Cancel"));
+                    message = LineBotUtils.genTemplateMessage("Here comes an action.", LineBotUtils.genConfirmTemplate(question, actions));
                 }
                 Timer timer = new Timer(10000, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genStickerMessage("2", "141"));
-                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genTextMessage("This is push message."));
-                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), LineBotUtils.genQuestion("Here comes a question.", "1", question, answers));
+                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), message);
                     }
                 });
                 timer.setRepeats(false);
@@ -257,6 +277,20 @@ public class LineServiceImpl implements LineService {
                     LineBotUtils.sendPlayerChoiceOptions(event, question, "PassRoom");
                 } else {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You are not allow to do this."));
+                }
+                break;
+            case "score":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String s : playerDao.getAllPlayerScores())
+                    {
+                        sb.append(s);
+                        sb.append("\n");
+                    }
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(sb.toString()));
+                } else {
+                    String score = String.valueOf(playerDao.getPlayerScoreByLineId(event.getSource().getUserId()));
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(score));
                 }
                 break;
             default:

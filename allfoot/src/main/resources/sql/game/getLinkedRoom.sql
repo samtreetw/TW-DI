@@ -5,7 +5,7 @@ SELECT
 FROM room_link rl
   JOIN room r ON rl.room_id_to = r.room_id
 WHERE room_id_from = ?
-  and room_id_to != ?
+      AND room_id_to != ?
       AND r.room_phase <= (SELECT status
                            FROM game
                            LIMIT 1);

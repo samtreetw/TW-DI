@@ -1,1 +1,3 @@
-SELECT count(1) from admin_user WHERE line_id = ?;
+SELECT count(1)
+FROM admin_user
+WHERE line_id = ?;
