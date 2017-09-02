@@ -79,6 +79,9 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     private static final String SQL_GET_PLAYER_COUNT =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/getPlayerCount.sql"));
 
+    private static final String SQL_INCREASE_PLAYER_EXTRA_DISTANCE_BY_ESN =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/player/increasePlayerExtraDistanceByEsn.sql"));
+
     private RowMapper<Player> playerRowMapper = new RowMapper<Player>() {
         @Override
         public Player mapRow(ResultSet rs, int i) throws SQLException {
@@ -88,6 +91,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
             player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));
             player.setLineId(rs.getString("line_id"));
             player.setScore(rs.getInt("score"));
+            player.setExtraDistance(rs.getInt("extra_distance"));
             return player;
         }
     };
@@ -209,6 +213,13 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 		return counts.isEmpty() ? 0 : counts.get(0);
 	}
 
-    
-    
+    @Override
+    public boolean increasePlayerExtraDistanceByEsn(String esn, int increment) {
+        return getJdbcTemplate().update(SQL_INCREASE_PLAYER_EXTRA_DISTANCE_BY_ESN, increment, esn) > 0;
+    }
+
+    @Override
+    public boolean reducePlayerExtraDistanceByEsn(String esn, int increment) {
+        return increasePlayerExtraDistanceByEsn(esn, -increment);
+    }
 }

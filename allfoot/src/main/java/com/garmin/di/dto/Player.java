@@ -16,6 +16,9 @@ public class Player {
     private String lineId;
     private int score;
 
+
+    private int extraDistance;
+
     public int getCurrentRoomId() {
         return currentRoomId;
     }
@@ -55,4 +58,12 @@ public class Player {
 	public void setScore(int score) {
 		this.score = score;
 	}
+
+    public int getExtraDistance() {
+        return extraDistance;
+    }
+
+    public void setExtraDistance(int extraDistance) {
+        this.extraDistance = extraDistance;
+    }
 }

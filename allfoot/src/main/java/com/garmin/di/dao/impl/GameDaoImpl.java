@@ -94,7 +94,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getAction.sql"));
     
     private static final String SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO =
-    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRanmdomRoomThatPlayerNeverBennTo.sql"));
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRandomRoomThatPlayerNeverBeenTo.sql"));
+
     
     private PlayerDao playerDao;
     
@@ -339,5 +340,5 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 		List<Integer> rooms = getJdbcTemplate().query(SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO, new SingleColumnRowMapper<Integer>(), esn);
 		return rooms.isEmpty() ? -1 : rooms.get(0);
 	}
-    
+
 }

@@ -26,6 +26,7 @@ import javax.ws.rs.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -76,33 +77,32 @@ public class GameServiceImpl implements GameService {
 	        	ActionContent actionContent = (ActionContent) roomWrapper.getEventWrapper().getRawObject();
 	        	ActionEvent actionEvent = actionContent.getAction();
 	        	switch (actionEvent) {
-	        	case CHANGE_SCORE:
-	    		case STOLE_SCORE: {
-	    			Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
-			        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
-			        break;
-	    		}
-	    		case HIDE_EVENT: {
-	    			int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo(esn);
-	    			gameDao.addRoomRecord(esn, randomRoomId);
-	    			Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
-	    			LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
-	    			break;
-	    		}
-	    		case BACK_TO_LOBBY: {
-	    			
-	    		}
-	    		case ADD_STEPS: {
-	    			
-	    		}
-	    		case DOUBLE_SCORE: {
-	    			playerDao.doublePlayerScoreByEsn(esn);
-	    			Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
-	    			LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
-					break;
-	    		}
-				default:
-					break;
+					case CHANGE_SCORE:
+					case STOLE_SCORE: {
+						Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						break;
+					}
+					case HIDE_EVENT: {
+						int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo(esn);
+						gameDao.addRoomRecord(esn, randomRoomId);
+						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						break;
+					}
+					case BACK_TO_LOBBY: {
+
+					}
+					case ADD_STEPS: {
+					}
+					case DOUBLE_SCORE: {
+						playerDao.doublePlayerScoreByEsn(esn);
+						Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+						LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+						break;
+					}
+					default:
+						break;
 				}
 	        }
 	        return true;
@@ -120,5 +120,26 @@ public class GameServiceImpl implements GameService {
         }
         return LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers);
     }
+
+	/**
+	 *
+	 * @param esn
+	 * @return Pair<YourScore, BossScore>
+	 */
+	public Pair<Integer, Integer> battleWithBoss(String esn) {
+    	int playerScore = playerDao.getPlayerScoreByEsn(esn);
+    	List<Player> players = playerDao.getAllPlayers();
+
+    	int avgScore = 0;
+    	for (Player player: players) {
+    		avgScore += player.getScore();
+		}
+		avgScore = Math.round(avgScore / players.size());
+
+		//TODO - Adjust boss's score
+    	Pair<Integer, Integer> pair = Pair.of(playerScore, avgScore);
+    	return pair;
+	}
+
 
 }

@@ -54,9 +54,13 @@ public interface PlayerDao {
 
     boolean switchPlayersScores(String triggeringLineId, String victimEsn);
 
-    public boolean doublePlayerScoreByEsn(String esn);
+    boolean doublePlayerScoreByEsn(String esn);
 
     boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score);
 
     List<String> getAllPlayerScores();
+
+    boolean increasePlayerExtraDistanceByEsn(String esn, int increment);
+
+    boolean reducePlayerExtraDistanceByEsn(String esn, int increment);
 }
