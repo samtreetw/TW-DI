@@ -8,6 +8,7 @@ package com.garmin.di.dto;
  */
 public class Room {
     private int roomId;
+    private int roomPhase;
     private String name;
     private String desc;
     private RoomEvent roomEvent;
@@ -18,6 +19,14 @@ public class Room {
 
     public void setRoomId(int roomId) {
         this.roomId = roomId;
+    }
+
+    public int getRoomPhase() {
+        return roomPhase;
+    }
+
+    public void setRoomPhase(int roomPhase) {
+        this.roomPhase = roomPhase;
     }
 
     public String getName() {

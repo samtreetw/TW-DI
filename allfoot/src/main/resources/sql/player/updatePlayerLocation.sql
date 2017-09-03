@@ -1,3 +1,3 @@
 UPDATE player
-SET location = ?
+SET previous_location = location, location = ?
 WHERE esn = ?;

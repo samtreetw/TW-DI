@@ -93,7 +93,14 @@ public class GameServiceImpl implements GameService {
 						break;
 					}
 					case BACK_TO_LOBBY: {
-
+						int currentRoomId = playerDao.getPlayerLocation(esn);
+						Room currentRoom = gameDao.getRoom(currentRoomId);
+						if (currentRoom.getRoomPhase() == 2) {
+							this.gotoRoom(esn, 10);
+						} else {
+							this.gotoRoom(esn, 0);
+						}
+						break;
 					}
 					case ADD_STEPS: {
 						int distanceIncrement = 0;

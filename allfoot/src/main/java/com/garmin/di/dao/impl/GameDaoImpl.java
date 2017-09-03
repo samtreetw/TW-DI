@@ -215,6 +215,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
                 Room room = new Room();
                 RoomEvent roomEvent = new RoomEvent();
                 room.setRoomId(resultSet.getInt("room_id"));
+				room.setRoomPhase(resultSet.getInt("room_phase"));
                 room.setName(resultSet.getString("name"));
                 room.setDesc(resultSet.getString("description"));
                 roomEvent.setEventId(resultSet.getString("event_id"));
