@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.ws.rs.Path;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -59,7 +56,12 @@ public class GameServiceImpl implements GameService {
         if (player.getPlayerStatus() == PlayerStatus.LOCK) {
             return Collections.emptyList();
         } else {
-            return gameDao.getLinkedRoom(player.getCurrentRoomId(), player.getPreviousRoomId());
+        	List<LinkedRoom> linkedRooms = gameDao.getLinkedRoom(player.getCurrentRoomId(), player.getPreviousRoomId());
+        	int extraDistance = playerDao.getPlayer(esn).getExtraDistance();
+        	for (LinkedRoom linkedRoom: linkedRooms) {
+        		linkedRoom.setDistance(linkedRoom.getDistance() + extraDistance);
+			}
+            return linkedRooms;
         }
     }
 
@@ -94,6 +96,8 @@ public class GameServiceImpl implements GameService {
 
 					}
 					case ADD_STEPS: {
+						int distanceIncrement = 0;
+						playerDao.increasePlayerExtraDistanceByEsn(esn, distanceIncrement);
 					}
 					case DOUBLE_SCORE: {
 						playerDao.doublePlayerScoreByEsn(esn);
@@ -127,17 +131,32 @@ public class GameServiceImpl implements GameService {
 	 * @return Pair<YourScore, BossScore>
 	 */
 	public Pair<Integer, Integer> battleWithBoss(String esn) {
-    	int playerScore = playerDao.getPlayerScoreByEsn(esn);
+		ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+    	final int ORIGIN = 1;
+    	final int BOUND = 6;
+		// Player's = current score * threadLocalRandom
+		int playerScore = playerDao.getPlayerScoreByEsn(esn) *
+				threadLocalRandom.nextInt(ORIGIN, BOUND);
+
+		// Boss's score = median of all players * threadLocalRandom
+		int bossScore = 0;
     	List<Player> players = playerDao.getAllPlayers();
+    	Collections.sort(players, new Comparator<Player>() {
+			@Override
+			public int compare(Player o1, Player o2) {
+				return o2.getScore() - o1.getScore();
+			}
+		});
 
-    	int avgScore = 0;
-    	for (Player player: players) {
-    		avgScore += player.getScore();
+    	int mid = players.size() / 2;
+    	if (players.size() % 2 == 1) {
+    		bossScore = players.get(mid).getScore();
+		} else {
+    		bossScore = (int) Math.round((players.get(mid - 1).getScore() + players.get(mid).getScore()) / 2.0);
 		}
-		avgScore = Math.round(avgScore / players.size());
+		bossScore *= threadLocalRandom.nextInt(ORIGIN, BOUND);
 
-		//TODO - Adjust boss's score
-    	Pair<Integer, Integer> pair = Pair.of(playerScore, avgScore);
+    	Pair<Integer, Integer> pair = Pair.of(playerScore, bossScore);
     	return pair;
 	}
 

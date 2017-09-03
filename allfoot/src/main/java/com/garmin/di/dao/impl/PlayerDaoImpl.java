@@ -75,7 +75,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
 
     private static final String SQL_GET_ALL_PLAYER_SCORES =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/player/getAllPlayerScores.sql"));
-    
+
     private static final String SQL_GET_PLAYER_COUNT =
             ResourceUtil.readFileContents(new ClassPathResource("sql/player/getPlayerCount.sql"));
 
