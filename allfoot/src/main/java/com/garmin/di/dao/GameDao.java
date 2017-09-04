@@ -44,7 +44,9 @@ public interface GameDao {
     boolean updateGameStatus(@NotNull GameStatus gameStatus);
 
     boolean addGameRecord(String esn, int roomId);
-    
+
+    List<Integer> getGameRank(String esn, int roomId);
+
     boolean addRoomRecord(String esn, int roomId);
 
     boolean addAdmin(String name, String lineId);

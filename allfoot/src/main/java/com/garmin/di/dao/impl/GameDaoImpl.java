@@ -246,7 +246,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         addGameRecord(esn, roomId);
 
     	// Calculate score.
-    	List<Integer> ranks = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+    	List<Integer> ranks = getGameRank(esn, roomId);
 
     	if (ranks.isEmpty()) {
     		logger.error("User:" + esn + " has added game record but get no rank from database");
@@ -285,7 +285,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 		return true;
 	}
 
-    @Override
+	@Override
     public boolean updateGameStatus(GameStatus gameStatus) {
         return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatus.getId()) > 0;
     }
@@ -297,6 +297,11 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         source.addValue("esn", esn);
         return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_RANK, source) > 0;
     }
+
+	@Override
+	public List<Integer> getGameRank(String esn, int roomId) {
+		return getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+	}
     
     @Override
 	public boolean addRoomRecord(String esn, int roomId) {

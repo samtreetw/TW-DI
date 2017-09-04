@@ -162,7 +162,7 @@ public class LineServiceImpl implements LineService {
                         }
                         break;
                     case "PassRoom":
-                        int room = gameDao.getCurrentRoom(item.getValue());
+                        int room = playerDao.getPlayerLocation(item.getValue());
                         if (gameDao.passRoom(item.getValue(), room) && gameDao.unLockPlayer(item.getValue())) {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + item.getValue() + " has passed room " + room + "."));
                         } else {
@@ -171,10 +171,15 @@ public class LineServiceImpl implements LineService {
                         break;
                     default:
                         Integer answer = gameDao.getAnswer(item.getKey());
+                        String esn = playerDao.getPlayerEsnByLineId(lineId);
+                        int roomId = playerDao.getPlayerLocation(esn);
+                        if (!gameDao.getGameRank(esn, roomId).isEmpty()) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
+                            return;
+                        }
                         if (Objects.equals(Integer.valueOf(item.getValue()), answer)) {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Correct!"));
-                            String esn = playerDao.getPlayerEsnByLineId(lineId);
-                            gameDao.passRoom(esn, playerDao.getPlayerLocation(esn));
+                            gameDao.passRoom(esn, roomId);
                             gameDao.unLockPlayer(esn);
                         } else {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong!"));
@@ -189,6 +194,12 @@ public class LineServiceImpl implements LineService {
     final private static int SCORE_TO_STEAL = 3;
 
     private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn) {
+        String originEsn = playerDao.getPlayerEsnByLineId(lineId);
+        int roomId = playerDao.getPlayerLocation(originEsn);
+        if (!gameDao.getGameRank(originEsn, roomId).isEmpty()) {
+            LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage("You have already finished this!"));
+            return;
+        }
         switch (actionEvent) {
             case CHANGE_SCORE: {
                 playerDao.switchPlayersScores(lineId, esn);
@@ -205,9 +216,11 @@ public class LineServiceImpl implements LineService {
             default:
                 return;
         }
+
         ActionContent actionContent = gameDao.getAction(actionEvent.getName());
         TextMessage textMessage = LineBotUtils.genTextMessage(actionContent.getNotificationTextB());
         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), textMessage);
+        gameDao.addGameRecord(originEsn, roomId);
         gameDao.unLockPlayer(playerDao.getPlayerEsnByLineId(lineId));
     }
 

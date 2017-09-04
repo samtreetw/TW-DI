@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class GameServiceImpl implements GameService {
 
-    final private static int INCREAMENTAL_STEPS = 200;
+    final private static int INCREMENTAL_STEPS = 200;
     final private static int PHASE_ONE_STARTING_ROOM_ID = 0;
     final private static int PHASE_TWO_STARTING_ROOM_ID = 10;
     private GameDao gameDao;
@@ -84,8 +84,10 @@ public class GameServiceImpl implements GameService {
                 switch (actionEvent) {
                     case CHANGE_SCORE:
                     case STOLE_SCORE: {
-                        Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        List<Message> messages = genActionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+                        for (Message message : messages) {
+                            LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        }
                         break;
                     }
                     case HIDE_EVENT: {
@@ -110,7 +112,7 @@ public class GameServiceImpl implements GameService {
                         break;
                     }
                     case ADD_STEPS: {
-                        playerDao.increasePlayerExtraDistanceByEsn(esn, INCREAMENTAL_STEPS);
+                        playerDao.increasePlayerExtraDistanceByEsn(esn, INCREMENTAL_STEPS);
                         Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         gameDao.unLockPlayer(esn);
@@ -141,6 +143,19 @@ public class GameServiceImpl implements GameService {
             count++;
         }
         return LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers);
+    }
+
+    private List<Message> genActionResponse(String eventId, EventContent eventContent) {
+        List<Pair<String, String>> answers = new ArrayList<>();
+        int count = 1;
+        for (String option : eventContent.getEventOptions()) {
+            answers.add(new ImmutablePair<>(option, Integer.toString(count)));
+            count++;
+        }
+        List<Message> messages = new ArrayList<>();
+        messages.add(LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers.subList(0, 4)));
+        messages.add(LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers.subList(4, 8)));
+        return messages;
     }
 
     /**
