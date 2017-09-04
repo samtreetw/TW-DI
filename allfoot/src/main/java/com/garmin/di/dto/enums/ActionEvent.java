@@ -8,7 +8,8 @@ public enum ActionEvent {
 	HIDE_EVENT("hide_event"),
 	BACK_TO_LOBBY("back_to_lobby"),
 	ADD_STEPS("add_steps"),
-	DOUBLE_SCORE("double_score");
+	DOUBLE_SCORE("double_score"),
+	BOSS("boss");
 	
 	private String name;
 	ActionEvent(String name) {

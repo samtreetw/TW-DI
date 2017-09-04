@@ -99,6 +99,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRandomRoomThatPlayerNeverBeenTo.sql"));
 
+    private static final String SQL_INSERT_PHASE_2_LINK =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase2Link.sql"));
+    
+    private static final String SQL_INSERT_PHASE_3_LINK =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase3Link.sql"));
+    
     private PlayerDao playerDao;
     
     
@@ -287,8 +293,23 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
 	@Override
     public boolean updateGameStatus(GameStatus gameStatus) {
+		if (gameStatus == GameStatus.PHASE_2) {
+			insertGamePhase2RoomLinks();
+		} else if (gameStatus == GameStatus.PHASE_3) {
+			insertGamePhase3RoomLinks();
+		}
         return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatus.getId()) > 0;
     }
+	
+	@Override
+	public boolean insertGamePhase2RoomLinks() {
+		return getJdbcTemplate().update(SQL_INSERT_PHASE_2_LINK) > 0;
+	}
+	
+	@Override
+	public boolean insertGamePhase3RoomLinks() {
+		return getJdbcTemplate().update(SQL_INSERT_PHASE_3_LINK) > 0;
+	}
 
     @Override
     public boolean addGameRecord(String esn, int roomId) {
@@ -305,7 +326,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     
     @Override
 	public boolean addRoomRecord(String esn, int roomId) {
-    	return getJdbcTemplate().update(SQL_INSERT_ROOM_RECORD, esn, roomId) > 0;
+    	return getJdbcTemplate().update(SQL_INSERT_ROOM_RECORD, roomId, esn) > 0;
 	}
 
 	@Override

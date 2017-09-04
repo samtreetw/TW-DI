@@ -37,9 +37,10 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class GameServiceImpl implements GameService {
 
-    final private static int INCREMENTAL_STEPS = 200;
+    final private static int INCREMENTAL_STEPS = 50;
     final private static int PHASE_ONE_STARTING_ROOM_ID = 0;
-    final private static int PHASE_TWO_STARTING_ROOM_ID = 10;
+    final private static int PHASE_TWO_STARTING_ROOM_ID = 11;
+
     private GameDao gameDao;
     private PlayerDao playerDao;
 

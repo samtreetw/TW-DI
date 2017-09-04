@@ -67,4 +67,8 @@ public interface GameDao {
     
     ActionContent getAction(String eventId);
     
+    boolean insertGamePhase2RoomLinks();
+    
+    boolean insertGamePhase3RoomLinks();
+    
 }
