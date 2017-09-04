@@ -20,7 +20,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.json.simple.JSONObject;
 
 import javax.ws.rs.Path;
 
@@ -40,7 +39,6 @@ public class GameServiceImpl implements GameService {
     final private static int INCREMENTAL_STEPS = 50;
     final private static int PHASE_ONE_STARTING_ROOM_ID = 0;
     final private static int PHASE_TWO_STARTING_ROOM_ID = 11;
-
     private GameDao gameDao;
     private PlayerDao playerDao;
 
@@ -71,9 +69,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public String gotoRoom(String esn, Integer roomId) {
-        Map<String, String> resultMap = new HashMap<String, String>();
-
+    public Room gotoRoom(String esn, Integer roomId) {
         try {
             RoomWrapper roomWrapper = gameDao.gotoRoom(esn, roomId);
             Room room = roomWrapper.getRoom();
@@ -106,9 +102,9 @@ public class GameServiceImpl implements GameService {
                         int currentRoomId = playerDao.getPlayerLocation(esn);
                         Room currentRoom = gameDao.getRoom(currentRoomId);
                         if (currentRoom.getRoomPhase() == 2) {
-                            this.gotoRoom(esn, PHASE_TWO_STARTING_ROOM_ID);
+                            room = this.gotoRoom(esn, PHASE_TWO_STARTING_ROOM_ID);
                         } else {
-                            this.gotoRoom(esn, PHASE_ONE_STARTING_ROOM_ID);
+                            room = this.gotoRoom(esn, PHASE_ONE_STARTING_ROOM_ID);
                         }
                         Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
@@ -133,11 +129,10 @@ public class GameServiceImpl implements GameService {
                         break;
                 }
             }
-            resultMap.put("result", "true");
+            return room;
         } catch (Exception e) {
-            resultMap.put("result", "false");
+            return new Room();
         }
-        return JSONObject.toJSONString(resultMap);
     }
 
     private Message genQuestionResponse(String eventId, EventContent eventContent) {

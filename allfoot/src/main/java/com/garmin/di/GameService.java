@@ -1,6 +1,7 @@
 package com.garmin.di;
 
 import com.garmin.di.dto.LinkedRoom;
+import com.garmin.di.dto.Room;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.ws.rs.GET;
@@ -38,7 +39,7 @@ public interface GameService {
     @PUT
     @Path("/{esn}/goto/{room_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    String gotoRoom(@PathParam("esn") String esn, @PathParam("room_id") Integer roomId);
+    Room gotoRoom(@PathParam("esn") String esn, @PathParam("room_id") Integer roomId);
 
     @GET
     @Path("/{esn}/battle")
