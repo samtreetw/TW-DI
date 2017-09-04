@@ -86,6 +86,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
         @Override
         public Player mapRow(ResultSet rs, int i) throws SQLException {
             Player player = new Player();
+            player.setEsn(rs.getString("esn"));
             player.setCurrentRoomId(rs.getInt("location"));
             player.setPreviousRoomId(rs.getInt("previous_location"));
             player.setPlayerStatus(PlayerStatus.lookup(rs.getInt("status")));

@@ -3,7 +3,6 @@ package com.garmin.di.impl;
 import com.garmin.di.GameService;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
-import com.garmin.di.dao.util.EventWrapper;
 import com.garmin.di.dao.util.RoomWrapper;
 import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;

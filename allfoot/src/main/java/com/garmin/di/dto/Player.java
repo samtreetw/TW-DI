@@ -10,16 +10,23 @@ import com.garmin.di.dto.enums.PlayerStatus;
  */
 public class Player {
 
+	String esn;
     private int currentRoomId;
     private int previousRoomId;
     private PlayerStatus playerStatus;
     private String lineId;
     private int score;
-
-
     private int extraDistance;
 
-    public int getCurrentRoomId() {
+    public String getEsn() {
+		return esn;
+	}
+
+	public void setEsn(String esn) {
+		this.esn = esn;
+	}
+
+	public int getCurrentRoomId() {
         return currentRoomId;
     }
 
