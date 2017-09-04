@@ -3,6 +3,7 @@ package com.garmin.di.impl;
 import com.garmin.di.GameService;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
+import com.garmin.di.dao.util.EventWrapper;
 import com.garmin.di.dao.util.RoomWrapper;
 import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
@@ -79,8 +80,14 @@ public class GameServiceImpl implements GameService {
             Room room = roomWrapper.getRoom();
             RoomEvent roomEvent = room.getRoomEvent();
             EventType eventType = roomEvent.getEventType();
+            EventContent eventContent = roomEvent.getEventContent();
+            
+            if (eventContent == null) {// EventContent would be null if the player has been there before.
+            	return room;
+            }
+            
             if (eventType == EventType.QUESTION) {
-                Message message = genQuestionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+                Message message = genQuestionResponse(roomEvent.getEventId(), eventContent);
                 LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
             } else {
                 ActionContent actionContent = (ActionContent) roomWrapper.getEventWrapper().getRawObject();
@@ -88,7 +95,7 @@ public class GameServiceImpl implements GameService {
                 switch (actionEvent) {
                     case CHANGE_SCORE:
                     case STOLE_SCORE: {
-                        List<Message> messages = genActionResponse(roomEvent.getEventId(), roomEvent.getEventContent());
+                        List<Message> messages = genActionResponse(roomEvent.getEventId(), eventContent);
                         for (Message message : messages) {
                             LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         }
@@ -97,7 +104,7 @@ public class GameServiceImpl implements GameService {
                     case HIDE_EVENT: {
                         int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo(esn);
                         gameDao.addRoomRecord(esn, randomRoomId);
-                        Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+                        Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         gameDao.unLockPlayer(esn);
                         break;
@@ -110,21 +117,21 @@ public class GameServiceImpl implements GameService {
                         } else {
                             room = this.gotoRoom(esn, PHASE_ONE_STARTING_ROOM_ID);
                         }
-                        Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+                        Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
                     case ADD_STEPS: {
                         playerDao.increasePlayerExtraDistanceByEsn(esn, INCREMENTAL_STEPS);
-                        Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+                        Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
                     case DOUBLE_SCORE: {
                         playerDao.doublePlayerScoreByEsn(esn);
-                        Message message = LineBotUtils.genTextMessage(roomEvent.getEventContent().getEvent());
+                        Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
                         gameDao.unLockPlayer(esn);
                         break;
