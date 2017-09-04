@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.json.simple.JSONObject;
 
 import javax.ws.rs.Path;
 
@@ -69,7 +70,9 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public boolean gotoRoom(String esn, Integer roomId) {
+    public String gotoRoom(String esn, Integer roomId) {
+        Map<String, String> resultMap = new HashMap<String, String>();
+
         try {
             RoomWrapper roomWrapper = gameDao.gotoRoom(esn, roomId);
             Room room = roomWrapper.getRoom();
@@ -129,10 +132,11 @@ public class GameServiceImpl implements GameService {
                         break;
                 }
             }
-            return true;
+            resultMap.put("result", "true");
         } catch (Exception e) {
-            return false;
+            resultMap.put("result", "false");
         }
+        return JSONObject.toJSONString(resultMap);
     }
 
     private Message genQuestionResponse(String eventId, EventContent eventContent) {
