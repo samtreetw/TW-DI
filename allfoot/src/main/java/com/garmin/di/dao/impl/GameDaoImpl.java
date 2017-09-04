@@ -1,5 +1,6 @@
 package com.garmin.di.dao.impl;
 
+import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dao.util.EventWrapper;
@@ -36,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -66,6 +68,9 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ROOM_PLAYER_RECORD_COUNT =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomPlayerRecordCount.sql"));
 
+    private static final String SQL_GET_GAME_STATUS =
+            ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getGameStatus.sql"));
+    
     private static final String SQL_UPDATE_GAME_STATUS =
             ResourceUtil.readFileContents(new ClassPathResource("/sql/game/updateGameStatus.sql"));
 
@@ -99,18 +104,23 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     private static final String SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getOneRandomRoomThatPlayerNeverBeenTo.sql"));
 
+    private static final String SQL_INSERT_PHASE_1_LINK =
+    		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase1Link.sql"));
+    
     private static final String SQL_INSERT_PHASE_2_LINK =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase2Link.sql"));
     
     private static final String SQL_INSERT_PHASE_3_LINK =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase3Link.sql"));
     
+    private DbBase dbBase;
     private PlayerDao playerDao;
     
     
     @Autowired
-    public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource, PlayerDao playerDao) {
+    public GameDaoImpl(@Qualifier("dataSource") DataSource dataSource, DbBase dbBase, PlayerDao playerDao) {
         super.setDataSource(dataSource);
+        this.dbBase = dbBase;
         this.playerDao = playerDao;
     }
 
@@ -291,15 +301,37 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 		return true;
 	}
 
+    @Override
+    public GameStatus getGameStatus() {
+    	List<Integer> gameStatuses = getJdbcTemplate().query(SQL_GET_GAME_STATUS, new SingleColumnRowMapper<Integer>());
+    	int gameStatus = gameStatuses.isEmpty() ? -1 : gameStatuses.get(0);
+    	try {
+    		return GameStatus.lookup(gameStatus);	
+    	} catch (NoSuchElementException e) {
+    		return GameStatus.PREPARE;
+		}
+    }
+    
 	@Override
     public boolean updateGameStatus(GameStatus gameStatus) {
-		if (gameStatus == GameStatus.PHASE_2) {
+		if (gameStatus == GameStatus.PHASE_1) {
+			insertGamePhase1RoomLinks();
+		} else if (gameStatus == GameStatus.PHASE_2) {
 			insertGamePhase2RoomLinks();
 		} else if (gameStatus == GameStatus.PHASE_3) {
 			insertGamePhase3RoomLinks();
+		} else if (gameStatus == GameStatus.PREPARE) {
+			dbBase.reset();
+		} else if (gameStatus == GameStatus.START) {
+			dbBase.setup();
 		}
         return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatus.getId()) > 0;
     }
+	
+	@Override
+	public boolean insertGamePhase1RoomLinks() {
+		return getJdbcTemplate().update(SQL_INSERT_PHASE_1_LINK) > 0;
+	}
 	
 	@Override
 	public boolean insertGamePhase2RoomLinks() {

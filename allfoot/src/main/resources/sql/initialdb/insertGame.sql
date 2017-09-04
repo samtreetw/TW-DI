@@ -85,8 +85,6 @@ INSERT INTO room_event (room_id, event_type, event_id) VALUES (37, 1, 'boss');
 
 -- Room link
 -- Phase 1 links
-INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (0, 1, 300);
-INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (0, 6, 300);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (1, 2, 100);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (1, 3, 80);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (1, 4, 120);

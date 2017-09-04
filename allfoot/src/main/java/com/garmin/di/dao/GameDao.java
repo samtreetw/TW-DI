@@ -40,6 +40,8 @@ public interface GameDao {
     RoomWrapper gotoRoom(String esn, int roomId);
     
     boolean passRoom(String esn, int roomId);
+    
+    GameStatus getGameStatus();
 
     boolean updateGameStatus(@NotNull GameStatus gameStatus);
 
@@ -66,6 +68,8 @@ public interface GameDao {
     EventContentImp getQuestion(String eventId);
     
     ActionContent getAction(String eventId);
+    
+    boolean insertGamePhase1RoomLinks();
     
     boolean insertGamePhase2RoomLinks();
     

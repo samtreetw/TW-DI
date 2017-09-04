@@ -12,6 +12,7 @@ import com.garmin.di.dto.Room;
 import com.garmin.di.dto.RoomEvent;
 import com.garmin.di.dto.enums.ActionEvent;
 import com.garmin.di.dto.enums.EventType;
+import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.dto.enums.PlayerStatus;
 import com.garmin.di.util.LineBotUtils;
 import com.linecorp.bot.model.message.Message;
@@ -56,7 +57,10 @@ public class GameServiceImpl implements GameService {
     @Override
     public List<LinkedRoom> getLinkedRoom(String esn) {
         Player player = playerDao.getPlayer(esn);
-        if (player.getPlayerStatus() == PlayerStatus.LOCK) {
+        if (player.getPlayerStatus() == PlayerStatus.LOCK || 
+        		gameDao.getGameStatus() == GameStatus.PREPARE ||
+        		gameDao.getGameStatus() == GameStatus.START ||
+        		gameDao.getGameStatus() == GameStatus.FINISH) {
             return Collections.emptyList();
         } else {
             List<LinkedRoom> linkedRooms = gameDao.getLinkedRoom(player.getCurrentRoomId(), player.getPreviousRoomId());
