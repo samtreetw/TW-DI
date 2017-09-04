@@ -115,7 +115,7 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
     @Nullable
     @Override
     public String getPlayerEsnByLineId(String lineId) {
-    	List<String> lineIds = getJdbcTemplate().query(SQL_GET_PLAYER_ESN_BY_LINE_ID, new SingleColumnRowMapper<String>());
+    	List<String> lineIds = getJdbcTemplate().query(SQL_GET_PLAYER_ESN_BY_LINE_ID, new SingleColumnRowMapper<String>(), lineId);
     	return lineIds.isEmpty() ? null : lineIds.get(0);
     }
 

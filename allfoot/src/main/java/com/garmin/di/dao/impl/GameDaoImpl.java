@@ -247,7 +247,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
     	// Calculate score.
     	List<Integer> ranks = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
-		
+
     	if (ranks.isEmpty()) {
     		logger.error("User:" + esn + " has added game record but get no rank from database");
     		return false;

@@ -6,6 +6,7 @@ import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.EventContentImp;
+import com.garmin.di.dto.Room;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
@@ -170,7 +171,14 @@ public class LineServiceImpl implements LineService {
                         break;
                     default:
                         Integer answer = gameDao.getAnswer(item.getKey());
-                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(Objects.equals(Integer.valueOf(item.getValue()), answer) ? "Correct" : "Wrong"));
+                        if (Objects.equals(Integer.valueOf(item.getValue()), answer)) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Correct!"));
+                            String esn = playerDao.getPlayerEsnByLineId(lineId);
+                            gameDao.passRoom(esn, playerDao.getPlayerLocation(esn));
+                            gameDao.unLockPlayer(esn);
+                        } else {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong!"));
+                        }
                         break;
                 }
             }
@@ -179,28 +187,28 @@ public class LineServiceImpl implements LineService {
     }
 
     final private static int SCORE_TO_STEAL = 3;
-    
-    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent,String lineId, String esn) {
-    	switch (actionEvent) {
-		case CHANGE_SCORE: {
-			playerDao.switchPlayersScores(lineId, esn);
-			TextMessage textMessage = LineBotUtils.genTextMessage("Exchange score done!");
-			LineBotUtils.sendPushMessage(lineId, textMessage);
-			break;
-		}
-		case STOLE_SCORE: {
-			playerDao.stealPlayerScore(lineId, esn, SCORE_TO_STEAL);
-			TextMessage textMessage = LineBotUtils.genTextMessage("Steal score done!");
-			LineBotUtils.sendPushMessage(lineId, textMessage);
-			break;
-		}
-		default:
-			return;
-		}
-    	ActionContent actionContent = gameDao.getAction(actionEvent.getName());
-		TextMessage textMessage = LineBotUtils.genTextMessage(actionContent.getNotificationTextB());
-		LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), textMessage);
-		gameDao.unLockPlayer(playerDao.getPlayerEsnByLineId(lineId));
+
+    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn) {
+        switch (actionEvent) {
+            case CHANGE_SCORE: {
+                playerDao.switchPlayersScores(lineId, esn);
+                TextMessage textMessage = LineBotUtils.genTextMessage("Exchange score done!");
+                LineBotUtils.sendPushMessage(lineId, textMessage);
+                break;
+            }
+            case STOLE_SCORE: {
+                playerDao.stealPlayerScore(lineId, esn, SCORE_TO_STEAL);
+                TextMessage textMessage = LineBotUtils.genTextMessage("Steal score done!");
+                LineBotUtils.sendPushMessage(lineId, textMessage);
+                break;
+            }
+            default:
+                return;
+        }
+        ActionContent actionContent = gameDao.getAction(actionEvent.getName());
+        TextMessage textMessage = LineBotUtils.genTextMessage(actionContent.getNotificationTextB());
+        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), textMessage);
+        gameDao.unLockPlayer(playerDao.getPlayerEsnByLineId(lineId));
     }
 
     private void handleBeaconEvent(BeaconEvent event) {
@@ -236,20 +244,61 @@ public class LineServiceImpl implements LineService {
                 break;
             case "test":
                 // Push message test
-                EventContent eventContent = gameDao.gotoRoom("1", 15).getEventWrapper().getRawObject();
+                EventContent eventContent = gameDao.gotoRoom("1", 1).getEventWrapper().getRawObject();
                 question = eventContent.getEvent();
                 answers = new ArrayList<>();
                 final Message message;
                 if (eventContent instanceof EventContentImp) {
-                    for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
+                        for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
                         answers.add(new ImmutablePair<>(eventContent.getEventOptions().get(i), String.valueOf(i + 1)));
                     }
                     message = LineBotUtils.genQuestion("Here comes a question.", "1", question, answers);
                 } else {
-                    List<Action> actions = new ArrayList<>();
-                    actions.add(new MessageAction("OK", ((ActionContent) eventContent).getAction().getName()));
-                    actions.add(new MessageAction("Cancel", "Cancel"));
-                    message = LineBotUtils.genTemplateMessage("Here comes an action.", LineBotUtils.genConfirmTemplate(question, actions));
+                    switch (((ActionContent) eventContent).getAction()) {
+                        case CHANGE_SCORE:
+                        case STOLE_SCORE: {
+
+                        }
+                        case HIDE_EVENT: {
+                            int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo("1");
+                            gameDao.addRoomRecord("1", randomRoomId);
+                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
+                            gameDao.unLockPlayer("1");
+                            break;
+                        }
+                        case BACK_TO_LOBBY: {
+                            int currentRoomId = playerDao.getPlayerLocation("1");
+                            Room currentRoom = gameDao.getRoom(currentRoomId);
+                            if (currentRoom.getRoomPhase() == 2) {
+                                gameDao.gotoRoom("1", 10);
+                            } else {
+                                gameDao.gotoRoom("1", 0);
+                            }
+                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
+                            gameDao.unLockPlayer("1");
+                            break;
+                        }
+                        case ADD_STEPS: {
+                            int distanceIncrement = 0;
+                            playerDao.increasePlayerExtraDistanceByEsn("1", distanceIncrement);
+                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
+                            gameDao.unLockPlayer("1");
+                            break;
+                        }
+                        case DOUBLE_SCORE: {
+                            playerDao.doublePlayerScoreByEsn("1");
+                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
+                            gameDao.unLockPlayer("1");
+                            break;
+                        }
+                        default:
+                            List<Action> actions = new ArrayList<>();
+                            actions.add(new MessageAction("OK", ((ActionContent) eventContent).getAction().getName()));
+                            actions.add(new MessageAction("Cancel", "Cancel"));
+                            message = LineBotUtils.genTemplateMessage("Here comes an action.", LineBotUtils.genConfirmTemplate(question, actions));
+                            break;
+                    }
+
                 }
                 Timer timer = new Timer(10000, new ActionListener() {
                     @Override
@@ -290,8 +339,7 @@ public class LineServiceImpl implements LineService {
             case "score":
                 if (gameDao.isAdmin(event.getSource().getUserId())) {
                     StringBuilder sb = new StringBuilder();
-                    for (String s : playerDao.getAllPlayerScores())
-                    {
+                    for (String s : playerDao.getAllPlayerScores()) {
                         sb.append(s);
                         sb.append("\n");
                     }
