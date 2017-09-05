@@ -118,6 +118,9 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
 	private static final String SQL_GET_ROOM_TRIAL_COUNT =
 			ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomTrialCount.sql"));
+
+	private static final String SQL_GET_ROOM_ID_BY_EVENT_ID =
+			ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomIdByEventId.sql"));
     
     private DbBase dbBase;
     private PlayerDao playerDao;
@@ -435,6 +438,13 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 	public int getRoomTrialCount(int roomId, String esn) {
 		List<Integer> counts = getJdbcTemplate().query(SQL_GET_ROOM_TRIAL_COUNT, new SingleColumnRowMapper<Integer>(), roomId, esn);
 		return counts.isEmpty() ? 0 : counts.get(0);
+	}
+
+	@Override
+	public int getRoomIdByEventId(String eventId) {
+		List<Integer> roomIds = getJdbcTemplate().query(SQL_GET_ROOM_ID_BY_EVENT_ID, new SingleColumnRowMapper<Integer>(), eventId);
+		return roomIds.isEmpty() ? -1 : roomIds.get(0);
+
 	}
 
 }

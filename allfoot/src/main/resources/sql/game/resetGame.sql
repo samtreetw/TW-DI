@@ -3,7 +3,7 @@ SET status = -1;
 
 DELETE FROM room;
 
-DELETE FROM room_link
+DELETE FROM room_link;
 
 DELETE FROM player;
 

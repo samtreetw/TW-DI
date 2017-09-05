@@ -152,7 +152,7 @@ public class LineServiceImpl implements LineService {
             String key = item.getKey();
             com.garmin.di.dto.enums.ActionEvent actionEvent = com.garmin.di.dto.enums.ActionEvent.getByName(key);
             if (actionEvent != null) {
-                handleActionEvent(actionEvent, lineId, item.getValue());
+                handleActionEvent(actionEvent, lineId, item.getValue(), key);
             } else {
                 switch (key) {
                     case "UserLineID":
@@ -173,18 +173,13 @@ public class LineServiceImpl implements LineService {
                     default:
                         Integer answer = gameDao.getAnswer(item.getKey());
                         String esn = playerDao.getPlayerEsnByLineId(lineId);
-                        int roomId = Integer.valueOf(key);
+                        int roomId = gameDao.getRoomIdByEventId(key);
                         int trial = gameDao.getRoomTrialCount(roomId, esn);
                         if (!gameDao.getGameRank(esn, roomId).isEmpty()) {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
-                        if (trial == 3) {
-                            gameDao.insertRoomTrial(roomId, esn);
-                            gameDao.unLockPlayer(esn);
-                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("No more chances for this question!\nYou could go to another room now."));
-                            return;
-                        } else if (trial > 3){
+                        if (trial > 3){
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
@@ -195,6 +190,12 @@ public class LineServiceImpl implements LineService {
                         } else {
                             gameDao.insertRoomTrial(roomId, esn);
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong!"));
+                            if ((trial+1) == 3) {
+                                gameDao.insertRoomTrial(roomId, esn);
+                                gameDao.unLockPlayer(esn);
+                                LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage("No more chances for this question!\nYou could go to another room now."));
+                                return;
+                            }
                         }
                         break;
                 }
@@ -205,9 +206,9 @@ public class LineServiceImpl implements LineService {
 
     final private static int SCORE_TO_STEAL = 3;
 
-    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn) {
+    private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn, String questionId) {
         String originEsn = playerDao.getPlayerEsnByLineId(lineId);
-        int roomId = playerDao.getPlayerLocation(originEsn);
+        int roomId = gameDao.getRoomIdByEventId(questionId);
         if (!gameDao.getGameRank(originEsn, roomId).isEmpty()) {
             LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage("You have already finished this!"));
             return;
@@ -392,8 +393,15 @@ public class LineServiceImpl implements LineService {
                             gameDao.updateGameStatus(GameStatus.lookup(Integer.valueOf(group[2])));
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
                         }
+                        return;
+                    } else if (originText.matches("lock ([1-8])")) {
+                        String[] group = originText.split(" ");
+                        gameDao.lockPlayer(group[1]);
+                    }  else if (originText.matches("unlock ([1-8])")) {
+                        String[] group = originText.split(" ");
+                        gameDao.lockPlayer(group[1]);
                     }
-                    return;
+
                 }
 
                 LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));

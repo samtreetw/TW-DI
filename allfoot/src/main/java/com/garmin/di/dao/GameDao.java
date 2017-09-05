@@ -78,4 +78,6 @@ public interface GameDao {
     boolean insertRoomTrial(int roomId, String esn);
 
     int getRoomTrialCount(int roomId, String esn);
+
+    int getRoomIdByEventId(String eventId);
 }
