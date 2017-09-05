@@ -429,10 +429,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
 	@Override
 	public boolean insertRoomTrial(int roomId, String esn) {
-		MapSqlParameterSource source = new MapSqlParameterSource();
-		source.addValue("room_id", roomId);
-		source.addValue("player_esn", esn);
-		return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_TRIAL, source) > 0;
+		return getJdbcTemplate().update(SQL_INSERT_ROOM_TRIAL, roomId, esn) > 0;
 	}
 
 	@Override
