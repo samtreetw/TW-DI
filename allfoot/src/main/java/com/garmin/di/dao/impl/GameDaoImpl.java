@@ -434,7 +434,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 
 	@Override
 	public int getRoomTrialCount(int roomId, String esn) {
-		List<Integer> counts = getJdbcTemplate().query(SQL_GET_ROOM_TRIAL_COUNT, new SingleColumnRowMapper<Integer>());
+		List<Integer> counts = getJdbcTemplate().query(SQL_GET_ROOM_TRIAL_COUNT, new SingleColumnRowMapper<Integer>(), roomId, esn);
 		return counts.isEmpty() ? 0 : counts.get(0);
 	}
 

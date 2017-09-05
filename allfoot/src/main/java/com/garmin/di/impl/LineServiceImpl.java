@@ -173,7 +173,7 @@ public class LineServiceImpl implements LineService {
                     default:
                         Integer answer = gameDao.getAnswer(item.getKey());
                         String esn = playerDao.getPlayerEsnByLineId(lineId);
-                        int roomId = playerDao.getPlayerLocation(esn);
+                        int roomId = Integer.valueOf(key);
                         int trial = gameDao.getRoomTrialCount(roomId, esn);
                         if (!gameDao.getGameRank(esn, roomId).isEmpty()) {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
