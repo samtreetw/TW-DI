@@ -135,6 +135,11 @@ public class GameServiceImpl implements GameService {
                         gameDao.unLockPlayer(esn);
                         break;
                     }
+                    case BOSS: {
+                    	Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
+                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        break;
+                    }
                     default:
                         break;
                 }
