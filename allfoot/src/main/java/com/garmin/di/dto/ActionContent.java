@@ -66,7 +66,7 @@ public class ActionContent implements EventContent {
 			List<Player> players = playerDao.getAllPlayers();
 			List<String> scores = new ArrayList<>();
 			for (Player player: players) {
-				scores.add("Team " + player.getEsn() + ":" + Integer.toString(player.getScore()));	
+				scores.add(player.getEsn() + ":" + Integer.toString(player.getScore()));	
 			}
 			return scores;
 		}
