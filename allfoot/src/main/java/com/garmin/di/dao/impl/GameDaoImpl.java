@@ -112,6 +112,12 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     
     private static final String SQL_INSERT_PHASE_3_LINK =
     		ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertPhase3Link.sql"));
+
+	private static final String SQL_INSERT_ROOM_TRIAL =
+			ResourceUtil.readFileContents(new ClassPathResource("/sql/game/insertRoomTrial.sql"));
+
+	private static final String SQL_GET_ROOM_TRIAL_COUNT =
+			ResourceUtil.readFileContents(new ClassPathResource("/sql/game/getRoomTrialCount.sql"));
     
     private DbBase dbBase;
     private PlayerDao playerDao;
@@ -419,6 +425,20 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 	public int getOneRandomRoomsThatPlayerNeverBeenTo(String esn) {
 		List<Integer> rooms = getJdbcTemplate().query(SQL_GET_ONE_RANDOM_ROOM_THAT_PLAYER_NEVER_BEEN_TO, new SingleColumnRowMapper<Integer>(), esn);
 		return rooms.isEmpty() ? -1 : rooms.get(0);
+	}
+
+	@Override
+	public boolean insertRoomTrial(int roomId, String esn) {
+		MapSqlParameterSource source = new MapSqlParameterSource();
+		source.addValue("room_id", roomId);
+		source.addValue("player_esn", esn);
+		return getNamedParameterJdbcTemplate().update(SQL_INSERT_ROOM_TRIAL, source) > 0;
+	}
+
+	@Override
+	public int getRoomTrialCount(int roomId, String esn) {
+		List<Integer> counts = getJdbcTemplate().query(SQL_GET_ROOM_TRIAL_COUNT, new SingleColumnRowMapper<Integer>());
+		return counts.isEmpty() ? 0 : counts.get(0);
 	}
 
 }

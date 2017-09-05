@@ -74,5 +74,8 @@ public interface GameDao {
     boolean insertGamePhase2RoomLinks();
     
     boolean insertGamePhase3RoomLinks();
-    
+
+    boolean insertRoomTrial(int roomId, String esn);
+
+    int getRoomTrialCount(int roomId, String esn);
 }

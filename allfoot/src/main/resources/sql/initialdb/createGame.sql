@@ -76,3 +76,8 @@ CREATE TABLE IF NOT EXISTS score_map (
   rank  INT,
   score INT
 );
+
+CREATE TABLE IF NOT EXISTS room_trial (
+  room_id    INT,
+  player_esn VARCHAR
+);

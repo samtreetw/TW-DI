@@ -7,6 +7,7 @@ import com.garmin.di.dto.ActionContent;
 import com.garmin.di.dto.EventContent;
 import com.garmin.di.dto.EventContentImp;
 import com.garmin.di.dto.Room;
+import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
@@ -173,7 +174,17 @@ public class LineServiceImpl implements LineService {
                         Integer answer = gameDao.getAnswer(item.getKey());
                         String esn = playerDao.getPlayerEsnByLineId(lineId);
                         int roomId = playerDao.getPlayerLocation(esn);
+                        int trial = gameDao.getRoomTrialCount(roomId, esn);
                         if (!gameDao.getGameRank(esn, roomId).isEmpty()) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
+                            return;
+                        }
+                        if (trial == 3) {
+                            gameDao.insertRoomTrial(roomId, esn);
+                            gameDao.unLockPlayer(esn);
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("No more chances for this question!\nYou could go to another room now."));
+                            return;
+                        } else if (trial > 3){
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
@@ -182,6 +193,7 @@ public class LineServiceImpl implements LineService {
                             gameDao.passRoom(esn, roomId);
                             gameDao.unLockPlayer(esn);
                         } else {
+                            gameDao.insertRoomTrial(roomId, esn);
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong!"));
                         }
                         break;
@@ -362,7 +374,28 @@ public class LineServiceImpl implements LineService {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(score));
                 }
                 break;
+            case "game":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    String status = gameDao.getGameStatus().name();
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(status));
+                }
+                break;
             default:
+                // Admin Only Commands
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    if (originText.matches("set game ([-[0-4]])")) {
+                        String[] group = originText.split(" ");
+                        if (group[2] == "-") {
+                            gameDao.updateGameStatus(GameStatus.PREPARE);
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
+                        } else {
+                            gameDao.updateGameStatus(GameStatus.lookup(Integer.valueOf(group[2])));
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
+                        }
+                    }
+                    return;
+                }
+
                 LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
                 break;
 
