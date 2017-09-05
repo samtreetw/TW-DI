@@ -59,8 +59,7 @@ public class GameServiceImpl implements GameService {
         Player player = playerDao.getPlayer(esn);
         if (player.getPlayerStatus() == PlayerStatus.LOCK || 
         		gameDao.getGameStatus() == GameStatus.PREPARE ||
-        		gameDao.getGameStatus() == GameStatus.START ||
-        		gameDao.getGameStatus() == GameStatus.FINISH) {
+        		gameDao.getGameStatus() == GameStatus.START) {
             return Collections.emptyList();
         } else {
             List<LinkedRoom> linkedRooms = gameDao.getLinkedRoom(player.getCurrentRoomId(), player.getPreviousRoomId());

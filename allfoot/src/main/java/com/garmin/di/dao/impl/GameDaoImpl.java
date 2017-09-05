@@ -326,9 +326,8 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
 			insertGamePhase2RoomLinks();
 		} else if (gameStatus == GameStatus.PHASE_3) {
 			insertGamePhase3RoomLinks();
-		} else if (gameStatus == GameStatus.PREPARE) {
-			dbBase.reset();
 		} else if (gameStatus == GameStatus.START) {
+			dbBase.drop();
 			dbBase.setup();
 		}
         return getJdbcTemplate().update(SQL_UPDATE_GAME_STATUS, gameStatus.getId()) > 0;

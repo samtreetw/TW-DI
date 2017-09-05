@@ -13,8 +13,7 @@ public enum GameStatus {
     START(0),
     PHASE_1(1),
     PHASE_2(2),
-    PHASE_3(3),
-    FINISH(4);
+    PHASE_3(3);
 
     private int id;
 
