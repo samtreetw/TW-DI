@@ -166,6 +166,15 @@ INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (9, 6, 10);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (9, 7, 10);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (9, 8, 10);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (9, 10, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 1, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 2, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 3, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 4, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 5, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 6, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 7, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 8, 10);
+INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (10, 9, 10);
 -- Phase 2 links
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (11, 12, 10);
 INSERT INTO room_link (room_id_from, room_id_to, distance) VALUES (11, 13, 10);
