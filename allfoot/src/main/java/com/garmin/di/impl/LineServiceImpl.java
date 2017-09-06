@@ -245,7 +245,7 @@ public class LineServiceImpl implements LineService {
      * Message Handlers
      */
     private void handleTextMessage(final MessageEvent event) throws Exception {
-        String originText = ((TextMessageContent) event.getMessage()).getText();
+        String originText = ((TextMessageContent) event.getMessage()).getText().trim().toLowerCase();
         final String question;
         final ArrayList<Pair<String, String>> answers;
         switch (originText) {
@@ -384,15 +384,10 @@ public class LineServiceImpl implements LineService {
             default:
                 // Admin Only Commands
                 if (gameDao.isAdmin(event.getSource().getUserId())) {
-                    if (originText.matches("set game ([-[0-4]])")) {
+                    if (originText.matches("set game ([0-3])")) {
                         String[] group = originText.split(" ");
-                        if (group[2] == "-") {
-                            gameDao.updateGameStatus(GameStatus.PREPARE);
-                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
-                        } else {
-                            gameDao.updateGameStatus(GameStatus.lookup(Integer.valueOf(group[2])));
-                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
-                        }
+                        gameDao.updateGameStatus(GameStatus.lookup(Integer.valueOf(group[2])));
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Game Status is updated."));
                         return;
                     } else if (originText.matches("lock ([1-8])")) {
                         String[] group = originText.split(" ");

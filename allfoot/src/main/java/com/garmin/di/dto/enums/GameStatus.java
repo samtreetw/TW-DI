@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
  * Time: 09:43
  */
 public enum GameStatus {
-    PREPARE(-1),
     START(0),
     PHASE_1(1),
     PHASE_2(2),

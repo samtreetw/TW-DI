@@ -315,7 +315,7 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     	try {
     		return GameStatus.lookup(gameStatus);	
     	} catch (NoSuchElementException e) {
-    		return GameStatus.PREPARE;
+    		return GameStatus.START;
 		}
     }
     

@@ -57,8 +57,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public List<LinkedRoom> getLinkedRoom(String esn) {
         Player player = playerDao.getPlayer(esn);
-        if (player.getPlayerStatus() == PlayerStatus.LOCK || 
-        		gameDao.getGameStatus() == GameStatus.PREPARE ||
+        if (player.getPlayerStatus() == PlayerStatus.LOCK ||         		
         		gameDao.getGameStatus() == GameStatus.START) {
             return Collections.emptyList();
         } else {
@@ -138,6 +137,7 @@ public class GameServiceImpl implements GameService {
                     case BOSS: {
                     	Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        gameDao.unLockPlayer(esn);
                         break;
                     }
                     default:
