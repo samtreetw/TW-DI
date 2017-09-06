@@ -47,6 +47,7 @@ public class ActionContent implements EventContent {
 		case BACK_TO_LOBBY:
 		case ADD_STEPS:
 		case DOUBLE_SCORE:
+		case BOSS:
 			return notificationTextA;
 		default:
 			return null;
@@ -74,6 +75,7 @@ public class ActionContent implements EventContent {
 		case BACK_TO_LOBBY:
 		case ADD_STEPS:
 		case DOUBLE_SCORE:
+		case BOSS:
 		default:
 			return null;
 		}
