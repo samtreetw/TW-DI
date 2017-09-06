@@ -35,11 +35,11 @@ INSERT INTO room (room_id, room_phase, name, description) VALUES (29, 2, 'room 2
 INSERT INTO room (room_id, room_phase, name, description) VALUES (30, 2, 'room 30', 'This is room 30 with question event');
 INSERT INTO room (room_id, room_phase, name, description) VALUES (31, 2, 'room 31', 'This is room 31 with question event');
 -- Phase 3 Rooms
-INSERT INTO room (room_id, room_phase, name, description) VALUES (32, 3, 'room 31', 'This is room 32 with question event');
-INSERT INTO room (room_id, room_phase, name, description) VALUES (33, 3, 'room 31', 'This is room 33 with question event');
-INSERT INTO room (room_id, room_phase, name, description) VALUES (34, 3, 'room 31', 'This is room 34 with question event');
-INSERT INTO room (room_id, room_phase, name, description) VALUES (35, 3, 'room 31', 'This is room 35 with question event');
-INSERT INTO room (room_id, room_phase, name, description) VALUES (36, 3, 'room 31', 'This is room 36 with question event');
+INSERT INTO room (room_id, room_phase, name, description) VALUES (32, 3, 'room 32', 'This is room 32 with question event');
+INSERT INTO room (room_id, room_phase, name, description) VALUES (33, 3, 'room 33', 'This is room 33 with question event');
+INSERT INTO room (room_id, room_phase, name, description) VALUES (34, 3, 'room 34', 'This is room 34 with question event');
+INSERT INTO room (room_id, room_phase, name, description) VALUES (35, 3, 'room 35', 'This is room 35 with question event');
+INSERT INTO room (room_id, room_phase, name, description) VALUES (36, 3, 'room 36', 'This is room 36 with question event');
 INSERT INTO room (room_id, room_phase, name, description) VALUES (37, 3, 'boss', 'This is boss room');
 
 -- Room events Phase 1
