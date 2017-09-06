@@ -47,7 +47,7 @@ public interface GameDao {
 
     boolean addGameRecord(String esn, int roomId);
 
-    List<Integer> getGameRank(String esn, int roomId);
+    int getGameRank(String esn, int roomId);
 
     boolean addRoomRecord(String esn, int roomId);
 

@@ -271,15 +271,13 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
         addGameRecord(esn, roomId);
 
     	// Calculate score.
-    	List<Integer> ranks = getGameRank(esn, roomId);
+    	int userRank = getGameRank(esn, roomId);
 
-    	if (ranks.isEmpty()) {
+    	if (userRank == -1) {
     		logger.error("User:" + esn + " has added game record but get no rank from database");
     		return false;
     	}
-    	
-    	int userRank = ranks.get(0);
-    	
+
 		// Get score of rank.
 		int rankScore = getJdbcTemplate().query(SQL_GET_RANK_SCORE, new ResultSetExtractor<Integer>(){
 
@@ -360,8 +358,9 @@ public class GameDaoImpl extends NamedParameterJdbcDaoSupport implements GameDao
     }
 
 	@Override
-	public List<Integer> getGameRank(String esn, int roomId) {
-		return getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+	public int getGameRank(String esn, int roomId) {
+    	List<Integer> ranks = getJdbcTemplate().query(SQL_GET_ROOM_PLAYER_RANK, new SingleColumnRowMapper<Integer>(), roomId, esn);
+		return ranks.isEmpty() ? -1 : ranks.get(0);
 	}
     
     @Override

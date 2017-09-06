@@ -166,7 +166,7 @@ public class GameServiceImpl implements GameService {
         	String [] items = option.split(":");
         	String esn = items[0];
         	String score = items[1];
-            answers.add(new ImmutablePair<>(esn, Integer.toString(count) + ". Team " + esn + ":" + score));
+            answers.add(new ImmutablePair<>(Integer.toString(count) + ". Team " + esn + ":" + score, esn));
             count++;
         }
         List<Message> messages = new ArrayList<>();

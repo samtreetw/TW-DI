@@ -175,7 +175,7 @@ public class LineServiceImpl implements LineService {
                         String esn = playerDao.getPlayerEsnByLineId(lineId);
                         int roomId = gameDao.getRoomIdByEventId(key);
                         int trial = gameDao.getRoomTrialCount(roomId, esn);
-                        if (!gameDao.getGameRank(esn, roomId).isEmpty()) {
+                        if (gameDao.getGameRank(esn, roomId) != -1) {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
@@ -209,7 +209,7 @@ public class LineServiceImpl implements LineService {
     private void handleActionEvent(com.garmin.di.dto.enums.ActionEvent actionEvent, String lineId, String esn, String questionId) {
         String originEsn = playerDao.getPlayerEsnByLineId(lineId);
         int roomId = gameDao.getRoomIdByEventId(questionId);
-        if (!gameDao.getGameRank(originEsn, roomId).isEmpty()) {
+        if (gameDao.getGameRank(originEsn, roomId) != -1) {
             LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage("You have already finished this!"));
             return;
         }
