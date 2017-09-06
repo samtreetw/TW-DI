@@ -81,7 +81,8 @@ public class GameServiceImpl implements GameService {
             EventContent eventContent = roomEvent.getEventContent();
             
             if (eventContent == null) {// EventContent would be null if the player has been there before.
-            	return room;
+            	gameDao.unLockPlayer(esn);
+                return room;
             }
             
             if (eventType == EventType.QUESTION) {

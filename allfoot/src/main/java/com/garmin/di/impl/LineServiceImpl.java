@@ -397,9 +397,13 @@ public class LineServiceImpl implements LineService {
                     } else if (originText.matches("lock ([1-8])")) {
                         String[] group = originText.split(" ");
                         gameDao.lockPlayer(group[1]);
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + group[1] + " is locked."));
+                        return;
                     }  else if (originText.matches("unlock ([1-8])")) {
                         String[] group = originText.split(" ");
-                        gameDao.lockPlayer(group[1]);
+                        gameDao.unLockPlayer(group[1]);
+                        LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + group[1] + " is unlocked."));
+                        return;
                     }
 
                 }
