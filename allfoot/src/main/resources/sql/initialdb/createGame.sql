@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS room_link (
   room_id_to   INT,
   distance     INT
 );
+CREATE UNIQUE INDEX IF NOT EXISTS unique_link ON room_link(room_id_from, room_id_to);
 
 --status 0:unlock 1:lock
 CREATE TABLE IF NOT EXISTS player (
