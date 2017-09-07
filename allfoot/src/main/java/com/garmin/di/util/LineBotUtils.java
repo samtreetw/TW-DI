@@ -195,7 +195,13 @@ public class LineBotUtils {
         for (Pair<String, String> answer : answers) {
             actions.add(new PostbackAction(answer.getKey(), questionId + ":" + answer.getValue(), ANSWER_SENT));
         }
-        Template template = genButtonsTemplate(QUESTION_IMAGE, null, question, actions);
+        Template template;
+        // Max question text 60  characters if image or title attached, 160 if not
+        if (question.length() < 60) {
+            template = genButtonsTemplate(QUESTION_IMAGE, null, question, actions);
+        } else {
+            template = genButtonsTemplate(null, null, question, actions);
+        }
         return genTemplateMessage(altText, template);
     }
 

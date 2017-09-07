@@ -46,6 +46,7 @@ import java.util.Objects;
 @Path("/line-service")
 @Service
 public class LineServiceImpl implements LineService {
+    private static final int MAX_TRIAL = 3;
     @Context
     private HttpServletRequest httpServletRequest;
     private static LineBotCallbackRequestParser lineBotCallbackRequestParser = new LineBotCallbackRequestParser(new LineSignatureValidator(LineBotProperties.getChannelSecret().getBytes()));
@@ -179,7 +180,7 @@ public class LineServiceImpl implements LineService {
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
-                        if (trial > 3){
+                        if (trial > MAX_TRIAL){
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("You have already finished this question!"));
                             return;
                         }
@@ -190,7 +191,7 @@ public class LineServiceImpl implements LineService {
                         } else {
                             gameDao.insertRoomTrial(roomId, esn);
                             LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong!"));
-                            if ((trial+1) == 3) {
+                            if ((trial+1) == MAX_TRIAL) {
                                 gameDao.insertRoomTrial(roomId, esn);
                                 gameDao.unLockPlayer(esn);
                                 LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage("No more chances for this question!\nYou could go to another room now."));
@@ -253,87 +254,8 @@ public class LineServiceImpl implements LineService {
                 question = "Who are you?";
                 LineBotUtils.sendPlayerChoiceOptions(event, question, "UserLineID");
                 break;
-            case "add admin":
-                UserProfileResponse userProfileResponse = LineBotUtils.getUserProfile(event.getSource().getUserId());
-                if (userProfileResponse == null) {
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Unable to retrieve profile. Fail to add you as admin."));
-                    return;
-                }
-                if (gameDao.addAdmin(userProfileResponse.getDisplayName(), userProfileResponse.getUserId())) {
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(userProfileResponse.getDisplayName() + " has been added as admin."));
-                } else {
-                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Fail to add you as admin. You may be an existing admin."));
-                }
-                break;
             case LineBotUtils.ANSWER_SENT:
                 // Receive answer sent string, do nothing
-                break;
-            case "test":
-                // Push message test
-                EventContent eventContent = gameDao.gotoRoom("1", 1).getEventWrapper().getRawObject();
-                question = eventContent.getEvent();
-                answers = new ArrayList<>();
-                final Message message;
-                if (eventContent instanceof EventContentImp) {
-                        for (int i = 0; i < eventContent.getEventOptions().size(); i++) {
-                        answers.add(new ImmutablePair<>(eventContent.getEventOptions().get(i), String.valueOf(i + 1)));
-                    }
-                    message = LineBotUtils.genQuestion("Here comes a question.", "1", question, answers);
-                } else {
-                    switch (((ActionContent) eventContent).getAction()) {
-                        case CHANGE_SCORE:
-                        case STOLE_SCORE: {
-
-                        }
-                        case HIDE_EVENT: {
-                            int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo("1");
-                            gameDao.addRoomRecord("1", randomRoomId);
-                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                            gameDao.unLockPlayer("1");
-                            break;
-                        }
-                        case BACK_TO_LOBBY: {
-                            int currentRoomId = playerDao.getPlayerLocation("1");
-                            Room currentRoom = gameDao.getRoom(currentRoomId);
-                            if (currentRoom.getRoomPhase() == 2) {
-                                gameDao.gotoRoom("1", 10);
-                            } else {
-                                gameDao.gotoRoom("1", 0);
-                            }
-                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                            gameDao.unLockPlayer("1");
-                            break;
-                        }
-                        case ADD_STEPS: {
-                            int distanceIncrement = 0;
-                            playerDao.increasePlayerExtraDistanceByEsn("1", distanceIncrement);
-                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                            gameDao.unLockPlayer("1");
-                            break;
-                        }
-                        case DOUBLE_SCORE: {
-                            playerDao.doublePlayerScoreByEsn("1");
-                            message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                            gameDao.unLockPlayer("1");
-                            break;
-                        }
-                        default:
-                            List<Action> actions = new ArrayList<>();
-                            actions.add(new MessageAction("OK", ((ActionContent) eventContent).getAction().getName()));
-                            actions.add(new MessageAction("Cancel", "Cancel"));
-                            message = LineBotUtils.genTemplateMessage("Here comes an action.", LineBotUtils.genConfirmTemplate(question, actions));
-                            break;
-                    }
-
-                }
-                Timer timer = new Timer(10000, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        LineBotUtils.sendPushMessage(event.getSource().getUserId(), message);
-                    }
-                });
-                timer.setRepeats(false);
-                timer.start();
                 break;
 
             // Admin Only Commands
@@ -399,11 +321,23 @@ public class LineServiceImpl implements LineService {
                         gameDao.unLockPlayer(group[1]);
                         LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + group[1] + " is unlocked."));
                         return;
+                    } else if (originText.matches("set score ([1-8]) ([0-9]*)")) {
+                        String[] group = originText.split(" ");
+                        // Update user score.
+                        boolean updateScoreStatus = playerDao.updatePlayerScore(group[2], Integer.valueOf(group[3]));
+                        if (updateScoreStatus) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + group[2] + "'s score is now " + group[3]));
+                        } else {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Set score failed."));
+                        }
+                        return;
+                    } else if (originText.matches("test ([1-8])")) {
+                        String[] group = originText.split(" ");
+                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(group[1]), LineBotUtils.genTextMessage("This is test."));
+                        return;
                     }
-
                 }
-
-                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(originText));
+                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong command. \n Please check again."));
                 break;
 
         }
