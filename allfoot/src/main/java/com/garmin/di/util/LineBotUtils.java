@@ -35,7 +35,7 @@ import java.util.Set;
 
 public class LineBotUtils {
     public static final String QUESTION_IMAGE = "https://i.imgur.com/HHQEUIf.jpg";
-    public static final String ANSWER_SENT = "Answer has been sent!";
+    public static final String ANSWER_SENT = "answer has been sent!";
 
     private static Logger logger = LoggerFactory.getLogger(LineBotUtils.class);
 

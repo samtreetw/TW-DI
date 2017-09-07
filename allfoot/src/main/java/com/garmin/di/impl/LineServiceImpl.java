@@ -4,19 +4,13 @@ import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dto.ActionContent;
-import com.garmin.di.dto.EventContent;
-import com.garmin.di.dto.EventContentImp;
-import com.garmin.di.dto.Room;
 import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
 import com.garmin.di.util.LineBotUtils;
 import com.linecorp.bot.client.LineSignatureValidator;
-import com.linecorp.bot.model.action.Action;
-import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.event.*;
 import com.linecorp.bot.model.event.message.*;
-import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.profile.UserProfileResponse;
 import com.linecorp.bot.servlet.LineBotCallbackRequestParser;
@@ -28,13 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.*;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -337,9 +327,8 @@ public class LineServiceImpl implements LineService {
                         return;
                     }
                 }
-                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong command. \n Please check again."));
+                LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong command.\nPlease check again."));
                 break;
-
         }
     }
 
