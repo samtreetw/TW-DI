@@ -78,6 +78,7 @@ public class GameServiceImpl implements GameService {
             RoomEvent roomEvent = room.getRoomEvent();
             EventType eventType = roomEvent.getEventType();
             EventContent eventContent = roomEvent.getEventContent();
+            String lineId = playerDao.getPlayerLineId(esn);
             
             if (eventContent == null) {// EventContent would be null if the player has been there before.
                 gameDao.unLockPlayer(esn);
@@ -85,8 +86,8 @@ public class GameServiceImpl implements GameService {
             }
             
             if (eventType == EventType.QUESTION) {
-                Message message = genQuestionResponse(roomEvent.getEventId(), eventContent);
-                LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                sendQuestion(roomEvent.getEventId(), eventContent, lineId);
+
             } else {
                 ActionContent actionContent = (ActionContent) roomWrapper.getEventWrapper().getRawObject();
                 ActionEvent actionEvent = actionContent.getAction();
@@ -95,7 +96,7 @@ public class GameServiceImpl implements GameService {
                     case STOLE_SCORE: {
                         List<Message> messages = genActionResponse(roomEvent.getEventId(), eventContent);
                         for (Message message : messages) {
-                            LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                            LineBotUtils.sendPushMessage(lineId, message);
                         }
                         break;
                     }
@@ -103,7 +104,7 @@ public class GameServiceImpl implements GameService {
                         int randomRoomId = gameDao.getOneRandomRoomsThatPlayerNeverBeenTo(esn);
                         gameDao.addRoomRecord(esn, randomRoomId);
                         Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        LineBotUtils.sendPushMessage(lineId, message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
@@ -116,27 +117,27 @@ public class GameServiceImpl implements GameService {
                             room = this.gotoRoom(esn, PHASE_ONE_STARTING_ROOM_ID);
                         }
                         Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        LineBotUtils.sendPushMessage(lineId, message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
                     case ADD_STEPS: {
                         playerDao.increasePlayerExtraDistanceByEsn(esn, INCREMENTAL_STEPS);
                         Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        LineBotUtils.sendPushMessage(lineId, message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
                     case DOUBLE_SCORE: {
                         playerDao.doublePlayerScoreByEsn(esn);
                         Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        LineBotUtils.sendPushMessage(lineId, message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
                     case BOSS: {
                     	Message message = LineBotUtils.genTextMessage(eventContent.getEvent());
-                        LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(esn), message);
+                        LineBotUtils.sendPushMessage(lineId, message);
                         gameDao.unLockPlayer(esn);
                         break;
                     }
@@ -150,14 +151,35 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    private Message genQuestionResponse(String eventId, EventContent eventContent) {
+    private void sendQuestion(String eventId, EventContent eventContent, String lineId) {
         List<Pair<String, String>> answers = new ArrayList<>();
         int count = 1;
+        boolean haslongOption = false;
         for (String option : eventContent.getEventOptions()) {
+            if (option.length() > 10) {
+                haslongOption = true;
+                break;
+            }
             answers.add(new ImmutablePair<>(option, Integer.toString(count)));
             count++;
         }
-        return LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers);
+        if (haslongOption) {
+            count = 1;
+            answers.clear();
+            List<String> options = new ArrayList<>();
+            for (String option : eventContent.getEventOptions()) {
+                answers.add(new ImmutablePair<>(Integer.toString(count), Integer.toString(count)));
+                options.add(count + ". " + option);
+                count++;
+            }
+            LineBotUtils.sendPushMessage(lineId, LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers));
+            for (String option : options) {
+                LineBotUtils.sendPushMessage(lineId, LineBotUtils.genTextMessage(option));
+            }
+            return;
+        }
+        LineBotUtils.sendPushMessage(lineId, LineBotUtils.genQuestion("Here comes a question!", eventId, eventContent.getEvent(), answers));
+
     }
 
     private List<Message> genActionResponse(String eventId, EventContent eventContent) {
