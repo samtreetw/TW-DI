@@ -1,9 +1,11 @@
 package com.garmin.di.impl;
 
+import com.garmin.di.GameService;
 import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
 import com.garmin.di.dto.ActionContent;
+import com.garmin.di.dto.Player;
 import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.util.LineBotProperties;
 import com.garmin.di.LineService;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -45,12 +48,14 @@ public class LineServiceImpl implements LineService {
     private DbBase dbBase;
     private GameDao gameDao;
     private PlayerDao playerDao;
+    private GameService gameService;
 
     @Autowired
-    public LineServiceImpl(DbBase dbBase, GameDao gameDao, PlayerDao playerDao) {
+    public LineServiceImpl(DbBase dbBase, GameDao gameDao, PlayerDao playerDao, GameService gameService) {
         this.dbBase = dbBase;
         this.gameDao = gameDao;
         this.playerDao = playerDao;
+        this.gameService = gameService;
     }
 
     @Override
@@ -293,6 +298,19 @@ public class LineServiceImpl implements LineService {
                     LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(status));
                 }
                 break;
+            case "location":
+                if (gameDao.isAdmin(event.getSource().getUserId())) {
+                    List<Player> players = playerDao.getAllPlayers();
+                    StringBuilder sb = new StringBuilder();
+                    for (Player player : players) {
+                        sb.append(player.getEsn());
+                        sb.append(" : ");
+                        sb.append(player.getCurrentRoomId());
+                        sb.append("\n");
+                    }
+                    LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage(sb.toString()));
+                }
+                break;
             default:
                 // Admin Only Commands
                 if (gameDao.isAdmin(event.getSource().getUserId())) {
@@ -324,6 +342,17 @@ public class LineServiceImpl implements LineService {
                     } else if (originText.matches("test ([1-8])")) {
                         String[] group = originText.split(" ");
                         LineBotUtils.sendPushMessage(playerDao.getPlayerLineId(group[1]), LineBotUtils.genTextMessage("This is test."));
+                        return;
+                    } else if (originText.matches("([1-8]) goto ([0-9]*)")) {
+                        String[] group = originText.split(" ");
+                        int roomId = Integer.valueOf(group[2]);
+                        if (roomId < 0 || roomId > 36) {
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Wrong room ID.\nPlease check again."));
+                            return;
+                        } else {
+                            gameService.gotoRoom(group[0], roomId);
+                            LineBotUtils.sendReplyMessage(event, LineBotUtils.genTextMessage("Player " + group[0] + " has been send to " + group[2]));
+                        }
                         return;
                     }
                 }
