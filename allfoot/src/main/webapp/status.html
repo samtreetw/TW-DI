@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Status</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<script>
+
+    var timer;
+    var isEnable = false;
+
+    function callback(response) {
+        var json = JSON.parse(response);
+        json.forEach(function (player) {
+            var elm = document.getElementById('s_' + player.esn);
+            if (elm) {
+                elm.innerHTML = player.score;
+            }
+        });
+    }
+
+    function refresh() {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                callback(xmlHttp.responseText);
+            }
+        };
+        xmlHttp.open("GET", "api/admin-service/score", true); // true for asynchronous
+        xmlHttp.send(null);
+    }
+
+    function auto() {
+        isEnable = !isEnable;
+
+        if (isEnable) {
+            refresh();
+            timer = setInterval(refresh(), 10000);
+        } else {
+            clearInterval(timer);
+        }
+    }
+
+</script>
+<body>
+<input type="button" value="refresh" onclick="refresh()"/>
+<input type="button" value="Auto" onclick="auto()"/>
+<table class="container">
+    <thead>
+    <tr>
+        <th><h1>隊名</h1></th>
+        <th><h1>分數</h1></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            <span style="color: red">紅隊</span>
+        </td>
+        <td id="s_1">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: orange">橙隊</span>
+        </td>
+        <td id="s_2">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: yellow">黃隊</span>
+        </td>
+        <td id="s_3">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: green">綠隊</span>
+        </td>
+        <td id="s_4">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: blue">藍隊</span>
+        </td>
+        <td id="s_5">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: indigo">靛隊</span>
+        </td>
+        <td id="s_6">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: purple">紫隊</span>
+        </td>
+        <td id="s_7">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span style="color: white">白隊</span>
+        </td>
+        <td id="s_8">
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

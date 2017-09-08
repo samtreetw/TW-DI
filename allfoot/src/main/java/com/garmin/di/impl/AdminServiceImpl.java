@@ -4,6 +4,7 @@ import com.garmin.di.AdminService;
 import com.garmin.di.dao.DbBase;
 import com.garmin.di.dao.GameDao;
 import com.garmin.di.dao.PlayerDao;
+import com.garmin.di.dto.Player;
 import com.garmin.di.dto.enums.GameStatus;
 import com.garmin.di.dto.enums.PlayerStatus;
 
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.Path;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -65,5 +67,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public boolean addRoomRecord(String esn, int roomId) {
         return gameDao.addGameRecord(esn, roomId);
+    }
+
+    @Override
+    public List<Player> getPlayerScore() {
+        return playerDao.getAllPlayerScoresByObject();
     }
 }

@@ -1,10 +1,10 @@
 package com.garmin.di.dao;
 
-import java.util.List;
-
 import com.garmin.di.dto.Player;
 import com.garmin.di.dto.enums.PlayerStatus;
 import com.sun.istack.NotNull;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -59,6 +59,8 @@ public interface PlayerDao {
     boolean stealPlayerScore(String stealerLineId, String victimEsn, Integer score);
 
     List<String> getAllPlayerScores();
+
+    List<Player> getAllPlayerScoresByObject();
 
     boolean increasePlayerExtraDistanceByEsn(String esn, int increment);
 

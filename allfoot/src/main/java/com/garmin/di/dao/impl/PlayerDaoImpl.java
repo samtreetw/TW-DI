@@ -207,8 +207,22 @@ public class PlayerDaoImpl extends NamedParameterJdbcDaoSupport implements Playe
             }
         });
     }
-    
-	@Override
+
+    @Override
+    public List<Player> getAllPlayerScoresByObject() {
+        return getJdbcTemplate().query(SQL_GET_ALL_PLAYER_SCORES, new RowMapper<Player>() {
+            @Override
+            public Player mapRow(ResultSet rs, int i) throws SQLException {
+                Player player = new Player();
+                player.setEsn(String.valueOf(rs.getInt("esn")));
+                player.setScore(rs.getInt("score"));
+                return player;
+            }
+        });
+
+    }
+
+    @Override
 	public int getPlayerCounts() {
 		List<Integer> counts = getJdbcTemplate().query(SQL_GET_PLAYER_COUNT, new SingleColumnRowMapper<Integer>());
 		return counts.isEmpty() ? 0 : counts.get(0);
